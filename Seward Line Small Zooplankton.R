@@ -1,6 +1,6 @@
 #######################################################################
 #####  Seward Line Small Zooplankton (<0.3mg) Processing Script  ######
-#####     Script by Colette Ward (ward@nceas.ucsb.edu)           ######
+#####     Script by Colette Ward (ward at nceas.ucsb.edu)        ######
 #####                      August 2015                           ######
 #######################################################################
 
