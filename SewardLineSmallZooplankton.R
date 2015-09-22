@@ -32,7 +32,8 @@ head(SCZo.a)
 setwd("~/Google Drive/GoA project/Data/Datasets/Data Packages/AOOS Ocean Workspace Packages/Seward Line Zooplankton 2010-12")
 SCZo.b=read.csv('Seward_Zoodata_Calvet_2010_2012_update.csv', header=T, stringsAsFactors=F, strip.white=TRUE)
 head(SCZo.b)
-
+str(SCZo.b)
+names(SCZo.b)
 
 # 1997-2011 dataset: extract year, month, day, time:
 SCZo.a1=SCZo.a %>%
@@ -60,39 +61,35 @@ head(SCZo.a1)
 # Convert variable names in 2010-2012 dataset to those used in 1998-2011 dataset
 # and extract samples from 2012
 SCZo.b1 = SCZo.b %>%
-  mutate(cruiseID=Cruise) %>%
-  mutate(time=Time) %>%
-  mutate(stationID=Station) %>%
-  mutate(towDepth=Tow.Depth..m.) %>%
-  mutate(sonicDepth=Sonic.Depth..m.) %>%
-  mutate(lat=Latitude..N.) %>%
-  mutate(lon=Longitude..W.) %>%
-  mutate(gear=Gear.Type) %>%
-  mutate(ringDiam=Ring.Diameter..cm.) %>%
-  mutate(meshSize=Mesh.Size.um) %>%
-  mutate(towType=Tow.Type) %>%
-  mutate(sampleVol=Sample.Volume..m3.) %>%
-  mutate(sciName=Current.Name) %>%
-  mutate(stage=Life.Stage) %>%
-  mutate(abundance=Abundance..no.m.3.) %>%
-  mutate(biomass=Biomass..g.m.3.) %>%
-  mutate(kingdom=Kingdom) %>%
-  mutate(phylum=Phylum) %>%
-  mutate(subphylum=Subphylum) %>%
-  mutate(class=Class) %>%
-  mutate(subclass=Subclass) %>%
-  mutate(infraclass=Infraclass) %>%
-  mutate(order=Order) %>%
-  mutate(suborder=Suborder) %>%
-  mutate(infraorder=Infraorder) %>%
-  mutate(family=Family) %>%
-  mutate(genus=Genus) %>%
-  mutate(species=Species.Name) %>%
-  filter(Year==2012) %>%
-  select(-Cruise, -Date.Time, -Time, -Station, -Tow.Depth..m., -Sonic.Depth..m., -Latitude..N., -Longitude..W., 
-         -Gear.Type, -Ring.Diameter..cm., -Mesh.Size.um, -Tow.Type, -Sample.Volume..m3., -Current.Name, -Life.Stage, 
-         -Abundance..no.m.3., -Biomass..g.m.3., -Kingdom, -Phylum, -Subphylum, -Class, -Subclass, -Infraclass, -Order, 
-         -Suborder, -Infraorder, -Family, -Genus, -Species.Name)
+  rename(cruiseID=Cruise) %>%
+  rename(time=Time) %>%
+  rename(stationID=Station) %>%
+  rename(towDepth=Tow.Depth..m.) %>%
+  rename(sonicDepth=Sonic.Depth..m.) %>%
+  rename(lat=Latitude..N.) %>%
+  rename(lon=Longitude..W.) %>%
+  rename(gear=Gear.Type) %>%
+  rename(ringDiam=Ring.Diameter..cm.) %>%
+  rename(meshSize=Mesh.Size.um) %>%
+  rename(towType=Tow.Type) %>%
+  rename(sampleVol=Sample.Volume..m3.) %>%
+  rename(sciName=Current.Name) %>%
+  rename(stage=Life.Stage) %>%
+  rename(abundance=Abundance..no.m.3.) %>%
+  rename(biomass=Biomass..g.m.3.) %>%
+  rename(kingdom=Kingdom) %>%
+  rename(phylum=Phylum) %>%
+  rename(subphylum=Subphylum) %>%
+  rename(class=Class) %>%
+  rename(subclass=Subclass) %>%
+  rename(infraclass=Infraclass) %>%
+  rename(order=Order) %>%
+  rename(suborder=Suborder) %>%
+  rename(infraorder=Infraorder) %>%
+  rename(family=Family) %>%
+  rename(genus=Genus) %>%
+  rename(species=Species.Name) %>%
+  filter(Year==2012)
 head(SCZo.b1)
 dim(SCZo.b1) # len should be 2620
 
