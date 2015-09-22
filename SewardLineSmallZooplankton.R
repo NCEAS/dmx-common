@@ -21,8 +21,6 @@ library(ggplot2)
 
 # problem with dates in online file (compared with https://www.sfos.uaf.edu/sewardline/results/DataByCruise2.html)
 # Temporarily use locally-stored file with corrected dates until changes are verified by Russ Hopcroft
-# In the following file I (Colette) have corrected sampling dates for cruise TXF06, station MS2: changed date from June 15 2009 to Sept 15 2006
-# and renamed variable "inraforder" to "infraorder"
 setwd("~/Google Drive/GoA project/Data/Datasets/Data Packages/AOOS NCEAS Packages/Seward Line Zooplankton 97-11")
 SCZo.a=read.csv('df35b.56.4-ltopZooplanktonData_CW corrected TXF06 date.csv', header=T, stringsAsFactors=F, strip.white=TRUE)
 head(SCZo.a)
@@ -139,6 +137,7 @@ plot(SCZo1$Year ~ SCZo1$Month, pch=16)
 #       lg zoop biomass varies year-to-year; community struture varies less from year-to-year
 # Small zooplankton: there appears to be a gradient in community structure across the shelf, but structure does not shift as strongly as lg zoop
 #       sm zoop community structure is more variable from year-to-year
+#       therefore use all GAK sites for small zoop
 
 
 # Which net to use for which taxa?
@@ -147,75 +146,31 @@ plot(SCZo1$Year ~ SCZo1$Month, pch=16)
 #         for large zooplankton (i.e. > 0.3mg) use MOCNESS & Multinet samples (335 & 500um mesh); 
 #         for small zoop (<0.3mg) use CalVET net (150um mesh)
 
-# Small zooplankton:
-# Hopcroft 2014 conference talk: small zooplankton do not show spatial structure across the GAK line
-# therefore use all GAK sites for small zoop
 
 # NB copepod stages I, II, III, etc are the same as stages C1, C2, C3, etc ... (shift in nomenclature in the database in 2005)
-# my assumption: when stage is blank ("NA") assume the individuals are adults.  Check this with Russ Hopcroft. (*be careful with this when doing adult data for Large Zoop dataset*)
 
-# ***NB Coyle & Pinchuk 2003 do not include nauplii in their size classification ... I need to add them here ***
-
-unique(sort(SCZo1GAK$species))
-[1] ""                             "abdominalis"                  "Acartia_longiremis"           "Acartia_sp."                 
-[5] "Acartia_tumida"               "Aegina_rosea"                 "Aequorea_sp."                 "Aetideus_pacificus"          
-[9] "Aglantha_digitale"            "Ammodytes_hexapterus"         "amphitrites"                  "antarcticus"                 
-[13] "arctica"                      "Autolytus_sp."                "Bradyidius_saanichi"          "bungii"                      
-[17] "Calanus_marshallae"           "Calanus_pacificus"            "Calocalanus_styliremis"       "Calycopsis_nematophora"      
-[21] "Candacia_bipinnata"           "Candacia_columbiae"           "Centropages_abdominalis"      "challengeri"                 
-[25] "Chionoecetes_sp."             "Clausocalanus_lividus"        "Clausocalanus_parapergens"    "Clausocalanus_sp."           
-[29] "Clio_sp."                     "Clione_limacina"              "columbiae"                    "Conchoecia_sp."              
-[33] "Coryne_principes"             "cristatus"                    "Cyphocaris_challengeri"       "digitale"                    
-[37] "Dimophyes_arctica"            "dispar"                       "Eirene_indicans"              "elegans"                     
-[41] "elongata"                     "Epilabidocera_amphitrites"    "Eucalanus_bungii"             "Eukrohnia_hamata"            
-[45] "Euphausia_pacifica"           "Euphysa_flammea"              "Evadne_sp."                   "flavicirrata"                
-[49] "flemingeri"                   "Fritillaria_sp."              "Gadus_macrocephalus"          "hamata"                      
-[53] "helicina"                     "Heterorhabdus_sp."            "Heterorhabdus_tanneri"        "Hyas_sp."                    
-[57] "Hyperia_sp."                  "Hyperoche_medusarum"          "indicans"                     "inermis"                     
-[61] "inspinata"                    "Leuroglossus_stilbius"        "libellula"                    "limacina"                    
-[65] "Limacina_helicina"            "longipes"                     "longiremis"                   "longissima"                  
-[69] "Lucicutia_flavicornis"        "Lucicutia_sp."                "macropa"                      "marshallae"                  
-[73] "medusarum"                    "Mesocalanus_sp."              "Mesocalanus_tenuicornis"      "Metridia_okhotensis"         
-[77] "Metridia_pacifica"            "Metridia_sp."                 "Microcalanus_sp."             "Microsetella_sp."            
-[81] "minor"                        "Monstrilla_sp."               "muelleri"                     "N/A"                         
-[85] "nd_superciliaris"             "Neocalanus_cristatus"         "Neocalanus_flemingeri"        "Neocalanus_plumchrus"        
-[89] "Neocalanus_sp."               "Obelia_longissima"            "octocostatum"                 "Oikopleura_sp."              
-[93] "Oithona_similis"              "Oithona_sp."                  "Oithona_spinirostris"         "Oncaea_sp."                  
-[97] "pacifica"                     "pacificus"                    "Pandalopsis_dispar"           "Pandalus_platyceros"         
-[101] "Paracalanus_parvus"           "Paracalanus_sp."              "Paraeuchaeta_elongata"        "Paralithodes_camtschaticus"  
-[105] "Parasagitta_elegans"          "parvus"                       "Pasiphaea_pacifica"           "Phronima_sp."                
-[109] "platyceros"                   "plumchrus"                    "Podon_sp."                    "Primno_macropa"              
-[113] "principes"                    "Proboscidactyla_flavicirrata" "Pseudoamallothrix_ovata"      "Pseudoamallothrix_sp."       
-[117] "Pseudocalanus_sp."            "Pseudosagitta_scrippsae"      "Racovitzanus_antarcticus"     "rosea"                       
-[121] "Salpa_sp."                    "Scina_borealis"               "Scolecithricella_minor"       "Scolecithricella_sp."        
-[125] "scrippsae"                    "similis"                      "Solmissus_sp."                "spinifera"                   
-[129] "spinirostris"                 "superciliaris"                "tanneri"                      "tenuicornis"                 
-[133] "Tessarabrachion_oculatus"     "Themisto_libellula"           "Themisto_pacifica"            "Themisto_sp."                
-[137] "Theragra_chalcogramma"        "Thysanoessa_inermis"          "Thysanoessa_inspinata"        "Thysanoessa_longipes"        
-[141] "Thysanoessa_raschii"          "Thysanoessa_sp."              "Thysanoessa_spinifera"        "Tomopteris_sp."              
-[145] "Tortanus_discaudatus"         "tumida"                       "Typhloscolex_muelleri"       
-
+# NB I need to add nauplii to small zooplankton code below ***
 
 
 # Create dataframe with years:
-MaySmallZoop=data.frame('Year'=c(1998:2012))
+MaySmallZoop=data.frame('Year'=c(1998:2010))
 
 # 1. Copepod size / net classifications from Coyle & Pinchuk 2003:
 # Acartia, all life stages
-Acartia = SCZo1GAK %>%
+SmAcartia = SCZo1GAK %>%
   filter(family == "Acartiidae") %>%
   filter(Month == 5) %>%
   group_by(Year, stationID) %>%
   summarise(AcartiaSite=sum(biomass)) %>% # find total biomass of all Acartia life stages for each GAK site
   ungroup %>%
   group_by(Year) %>%
-  summarise(Acartia=mean(AcartiaSite)) %>% # take mean Acartia biomass across all GAK sites
+  summarise(SmAcartia=mean(AcartiaSite)) %>% # take mean Acartia biomass across all GAK sites
   ungroup
-#View(Acartia)
-MaySmallZoop <- merge(MaySmallZoop,Acartia,all.x=T)
+View(SmAcartia)
+MaySmallZoop <- merge(MaySmallZoop,SmAcartia,all.x=T)
 
-# Aetideidae, stages I-IV
-Aetideidae = SCZo1GAK %>%
+# Aetideidae, stages I-IV # NB there are none in GAK samples
+SmAetideidae = SCZo1GAK %>%
   filter(family == "Aetideidae") %>%
   filter(stage %in% c("I", "II", "III", "IV", "C1", "C2", "C3", "C4")) %>%
   filter(Month == 5) %>%
@@ -223,12 +178,11 @@ Aetideidae = SCZo1GAK %>%
   summarise(AetideidaeSite=sum(biomass)) %>%
   ungroup %>%
   group_by(Year) %>%
-  summarise(Aetideidae=mean(AetideidaeSite)) %>% 
+  summarise(SmAetideidae=mean(AetideidaeSite)) %>% 
   ungroup
-#View(Aetideidae) # NB there are none in GAK samples
 
 # Calanus marshallae, stages I - III
-Cmarshallae = SCZo1GAK %>%
+SmCmarshallae = SCZo1GAK %>%
   filter(species %in% c("Calanus_marshallae", "marshallae")) %>% 
   filter(stage %in% c("I", "II", "III", "C1", "C2", "C3")) %>%
   filter(Month == 5) %>%
@@ -236,13 +190,13 @@ Cmarshallae = SCZo1GAK %>%
   summarise(CmarshallaeSite=sum(biomass)) %>%
   ungroup %>%
   group_by(Year) %>%
-  summarise(Cmarshallae=mean(CmarshallaeSite)) %>%
+  summarise(SmCmarshallae=mean(CmarshallaeSite)) %>%
   ungroup
 #View(Cmarshallae)
-MaySmallZoop <- merge(MaySmallZoop,Cmarshallae,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmCmarshallae,all.x=T)
 
 # Calanus pacificus, stages I - IV
-Cpacificus = SCZo1GAK %>%
+SmCpacificus = SCZo1GAK %>%
   filter(species %in% c("Calanus_pacificus", "pacificus")) %>%  # does not include Aetideus pacificus
   filter(stage %in% c("I", "II", "III", "IV", "C1", "C2", "C3", "C4")) %>%
   filter(Month == 5) %>%
@@ -250,13 +204,12 @@ Cpacificus = SCZo1GAK %>%
   summarise(CpacificusSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Cpacificus=mean(CpacificusSite)) %>% 
+  summarise(SmCpacificus=mean(CpacificusSite)) %>% 
   ungroup
-#View(Cpacificus)
-MaySmallZoop <- merge(MaySmallZoop,Cpacificus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmCpacificus,all.x=T)
 
-# Candacia columbiae, stages I - III
-Ccolumbiae = SCZo1GAK %>%
+# Candacia columbiae, stages I - III # none at GAK sites in May
+SmCcolumbiae = SCZo1GAK %>%
   filter(species %in% c("Candacia_columbiae", "columbiae")) %>% 
   filter(stage %in% c("I", "II", "III", "C1", "C2", "C3")) %>%
   filter(Month == 5) %>%
@@ -264,38 +217,35 @@ Ccolumbiae = SCZo1GAK %>%
   summarise(CcolumbiaeSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Ccolumbiae=mean(CcolumbiaeSite)) %>% 
+  summarise(SmCcolumbiae=mean(CcolumbiaeSite)) %>% 
   ungroup
-#View(Ccolumbiae) # none at GAK sites in May
 
 # Centropages abdominalis, all stages
-Cabdominalis = SCZo1GAK %>%
+SmCabdominalis = SCZo1GAK %>%
   filter(species %in% c("Centropages_abdominalis", "abdominalis")) %>% 
   filter(Month == 5) %>%
   group_by(Year, stationID) %>%
   summarise(CabdominalisSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Cabdominalis=mean(CabdominalisSite)) %>% 
+  summarise(SmCabdominalis=mean(CabdominalisSite)) %>% 
   ungroup
-#View(Cabdominalis)
-MaySmallZoop <- merge(MaySmallZoop,Cabdominalis,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmCabdominalis,all.x=T)
 
 # Clausocalanus spp., all stages
-Clausocalanus = SCZo1GAK %>%
+SmClausocalanus = SCZo1GAK %>%
   filter(species %in% c("Clausocalanus_sp.", "Clausocalanus_parapergens", "Clausocalanus_lividus") | genus == "Clausocalanus") %>%
   filter(Month == 5) %>%
   group_by(Year, stationID) %>%
   summarise(ClausocalanusSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Clausocalanus=mean(ClausocalanusSite)) %>% 
+  summarise(SmClausocalanus=mean(ClausocalanusSite)) %>% 
   ungroup
-#View(Clausocalanus)
-MaySmallZoop <- merge(MaySmallZoop,Clausocalanus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmClausocalanus,all.x=T)
 
 # Epilabidocera amphitrites, stages I - III; NB none in May GAK samples - but add in Apr 30 sample from GAK2 in 2002 (cruiseID == hx258)
-Eamphitrites = SCZo1GAK %>%
+SmEamphitrites = SCZo1GAK %>%
   filter(species %in% c("Epilabidocera_amphitrites", "amphitrites")) %>% 
   filter(stage %in% c("I", "II", "III", "C1", "C2", "C3")) %>%
   filter(Month == 5) %>%
@@ -303,13 +253,12 @@ Eamphitrites = SCZo1GAK %>%
   summarise(EamphitritesSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Eamphitrites=mean(EamphitritesSite)) %>% 
+  summarise(SmEamphitrites=mean(EamphitritesSite)) %>% 
   ungroup
-#View(Eamphitrites) 
 
 
 # Eucalanus bungii, stages I - III
-Ebungii = SCZo1GAK %>%
+SmEbungii = SCZo1GAK %>%
   filter(species %in% c("Eucalanus_bungii", "bungii")) %>% 
   filter(stage %in% c("I", "II", "III", "C1", "C2", "C3")) %>%
   filter(Month == 5) %>%
@@ -317,13 +266,12 @@ Ebungii = SCZo1GAK %>%
   summarise(EbungiiSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Ebungii=mean(EbungiiSite)) %>% 
+  summarise(SmEbungii=mean(EbungiiSite)) %>% 
   ungroup
-#View(Ebungii)
-MaySmallZoop <- merge(MaySmallZoop,Ebungii,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmEbungii,all.x=T)
 
 # Euchaeta elongata, stages I - II # renamed to Paraeuchaeta elongata?
-Pelongata = SCZo1GAK %>%
+SmPelongata = SCZo1GAK %>%
   filter(species %in% c("Paraeuchaeta_elongata", "elongata")) %>% 
   filter(stage %in% c("I", "II", "C1", "C2")) %>%
   filter(Month == 5) %>%
@@ -331,25 +279,23 @@ Pelongata = SCZo1GAK %>%
   summarise(PelongataSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Pelongata=mean(PelongataSite)) %>% 
+  summarise(SmPelongata=mean(PelongataSite)) %>% 
   ungroup
-#View(Pelongata)
-MaySmallZoop <- merge(MaySmallZoop,Pelongata,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmPelongata,all.x=T)
 
 # Eurytemora, all life stages; NB doesn't appear at GAK sites
-Eurytemora = SCZo1GAK %>%
+SmEurytemora = SCZo1GAK %>%
   filter(species == "Eurytemora_sp.") %>%
   filter(Month == 5) %>%
   group_by(Year, stationID) %>%
   summarise(EurytemoraSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Eurytemora=mean(EurytemoraSite)) %>%
+  summarise(SmEurytemora=mean(EurytemoraSite)) %>%
   ungroup
-#View(Eurytemora)
 
 # Heterorhabdus spp., stages I - III  NB none in May GAK samples
-Heterorhabdus = SCZo1GAK %>%
+SmHeterorhabdus = SCZo1GAK %>%
   filter(species %in% c("Heterorhabdus_sp.", "Heterorhabdus_tanneri", "tanneri")) %>% 
   filter(stage %in% c("I", "II", "III", "C1", "C2", "C3")) %>%
   filter(Month == 5) %>%
@@ -357,15 +303,14 @@ Heterorhabdus = SCZo1GAK %>%
   summarise(HeterorhabdusSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Heterorhabdus=mean(HeterorhabdusSite)) %>% 
+  summarise(SmHeterorhabdus=mean(HeterorhabdusSite)) %>% 
   ungroup
-#View(Heterorhabdus)
 
 # Heterostylites spp., stages I - IV # not in CalVET nets at all?
 
 
 # Lucicutia spp., stages I - IV; none in May GAK samples
-Lucicutia = SCZo1GAK %>%
+SmLucicutia = SCZo1GAK %>%
   filter(species %in% c("Lucicutia_sp.", "Lucicutia_flavicornis")) %>% 
   filter(stage %in% c("I", "II", "III", "IV", "C1", "C2", "C3", "C4")) %>%
   filter(Month == 5) %>%
@@ -373,25 +318,23 @@ Lucicutia = SCZo1GAK %>%
   summarise(LucicutiaSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Lucicutia=mean(LucicutiaSite)) %>% 
+  summarise(SmLucicutia=mean(LucicutiaSite)) %>% 
   ungroup
-#View(Lucicutia)
 
 # Mesocalanus tenuicornis, all stages (include Mesocalanus sp. here as well, there are only 5 entries, all in 1998)
-Mesocalanus = SCZo1GAK %>%
+SmMesocalanus = SCZo1GAK %>%
   filter(species %in% c("Mesocalanus_tenuicornis", "Mesocalanus_sp.", "tenuicornis")) %>% 
   filter(Month == 5) %>%
   group_by(Year, stationID) %>%
   summarise(MesocalanusSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Mesocalanus=mean(MesocalanusSite)) %>% 
+  summarise(SmMesocalanus=mean(MesocalanusSite)) %>% 
   ungroup
-#View(Mesocalanus)
-MaySmallZoop <- merge(MaySmallZoop,Mesocalanus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMesocalanus,all.x=T)
 
 # Metridia okhotensis, stages I - IV
-Mokhotensis = SCZo1GAK %>%
+SmMokhotensis = SCZo1GAK %>%
   filter(species %in% c("Metridia_okhotensis", "okhotensis")) %>% 
   filter(stage %in% c("I", "II", "III", "IV", "C1", "C2", "C3", "C4")) %>%
   filter(Month == 5) %>%
@@ -399,13 +342,12 @@ Mokhotensis = SCZo1GAK %>%
   summarise(MokhotensisSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Mokhotensis=mean(MokhotensisSite)) %>% 
+  summarise(SmMokhotensis=mean(MokhotensisSite)) %>% 
   ungroup
-#View(Mokhotensis)
-MaySmallZoop <- merge(MaySmallZoop,Mokhotensis,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMokhotensis,all.x=T)
 
 # Metridia pacifica, stages I - V & Males
-Mpacifica = SCZo1GAK %>%
+SmMpacifica = SCZo1GAK %>%
   filter(species == "Metridia_pacifica" | sciName =="Metridia pacifica") %>% 
   filter(stage %in% c("I", "II", "III", "IV", "V", "C1", "C2", "C3", "C4", "C5", "AM", "Male", "males")) %>%  # don't need to look at NAs, there are none for M pacifica
   filter(Month == 5) %>%
@@ -413,26 +355,24 @@ Mpacifica = SCZo1GAK %>%
   summarise(MpacificaSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Mpacifica=mean(MpacificaSite)) %>% 
+  summarise(SmMpacifica=mean(MpacificaSite)) %>% 
   ungroup
-#View(Mpacifica)
-MaySmallZoop <- merge(MaySmallZoop,Mpacifica,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMpacifica,all.x=T)
 
 # Microcalanus spp., all stages
-Microcalanus = SCZo1GAK %>%
+SmMicrocalanus = SCZo1GAK %>%
   filter(species == "Microcalanus_sp." | sciName == "Microcalanus_sp.") %>% 
   filter(Month == 5) %>%
   group_by(Year, stationID) %>%
   summarise(MicrocalanusSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Microcalanus=mean(MicrocalanusSite)) %>% 
+  summarise(SmMicrocalanus=mean(MicrocalanusSite)) %>% 
   ungroup
-#View(Microcalanus)
-MaySmallZoop <- merge(MaySmallZoop,Microcalanus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMicrocalanus,all.x=T)
 
 # Neocalanus cristatus, stages I - II
-Ncristatus = SCZo1GAK %>%
+SmNcristatus = SCZo1GAK %>%
   filter(species %in% c("Neocalanus_cristatus", "cristatus")) %>% 
   filter(stage %in% c("I", "II", "C1", "C2")) %>%
   filter(Month == 5) %>%
@@ -440,13 +380,12 @@ Ncristatus = SCZo1GAK %>%
   summarise(NcristatusSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Ncristatus=mean(NcristatusSite)) %>% 
+  summarise(SmNcristatus=mean(NcristatusSite)) %>% 
   ungroup
-#View(Ncristatus)
-MaySmallZoop <- merge(MaySmallZoop,Ncristatus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmNcristatus,all.x=T)
 
 # Neocalanus plumchrus-flemingeri, stages I - III # NB none in May GAK samples
-Npflemingeri = SCZo1GAK %>%
+SmNpflemingeri = SCZo1GAK %>%
   filter(species %in% c("Neocalanus_plumchrus", "Neocalanus_flemingeri", "plumchrus", "flemingeri")) %>% 
   filter(stage %in% c("I", "II", "III", "C1", "C2", "C3")) %>%
   filter(Month == 5) %>%
@@ -454,136 +393,126 @@ Npflemingeri = SCZo1GAK %>%
   summarise(NpflemingeriSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Npflemingeri=mean(NpflemingeriSite)) %>% 
+  summarise(SmNpflemingeri=mean(NpflemingeriSite)) %>% 
   ungroup
-#View(Npflemingeri)
 
 # Oithona spp., all stages
-Oithona = SCZo1GAK %>%
+SmOithona = SCZo1GAK %>%
   filter(species %in% c("Oithona_similis", "Oithona_spinirostris", "Oithona_sp.", "similis", "spinirostris") | sciName == "Oithona_sp.") %>% 
   filter(Month == 5) %>%
   group_by(Year, stationID) %>%
   summarise(OithonaSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Oithona=mean(OithonaSite)) %>% 
+  summarise(SmOithona=mean(OithonaSite)) %>% 
   ungroup
-#View(Oithona)
-MaySmallZoop <- merge(MaySmallZoop,Oithona,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmOithona,all.x=T)
 
 # Oncaea spp., all stages
-Oncaea = SCZo1GAK %>%
+SmOncaea = SCZo1GAK %>%
   filter(species == "Oncaea_sp." | sciName == "Oncaea_sp.") %>% 
   filter(Month == 5) %>%
   group_by(Year, stationID) %>%
   summarise(OncaeaSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Oncaea=mean(OncaeaSite)) %>% 
+  summarise(SmOncaea=mean(OncaeaSite)) %>% 
   ungroup
-#View(Oncaea)
-MaySmallZoop <- merge(MaySmallZoop,Oncaea,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmOncaea,all.x=T)
 
 # Paracalanus spp., all stages; NB none in May GAK samples
-Paracalanus = SCZo1GAK %>%
+SmParacalanus = SCZo1GAK %>%
   filter(species %in% c("Paracalanus_parvus", "Paracalanus_sp.", "parvus") | sciName == "Paracalanus_sp.") %>% 
   filter(Month == 5) %>%
   group_by(Year, stationID) %>%
   summarise(ParacalanusSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Paracalanus=mean(ParacalanusSite)) %>% 
+  summarise(SmParacalanus=mean(ParacalanusSite)) %>% 
   ungroup
-#View(Paracalanus)
 
 # Pleuromamma spp., stgbes I-IV (family Metridinidae, genus Pleuromamma)  NB None in this dataset ... ?
 
 # Pseudocalanus spp., all stages
-Pseudocalanus = SCZo1GAK %>%
+SmPseudocalanus = SCZo1GAK %>%
   filter(species == "Pseudocalanus_sp." | sciName == "Pseudocalanus_sp.") %>% 
   filter(Month == 5) %>%
   group_by(Year, stationID) %>%
   summarise(PseudocalanusSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Pseudocalanus=mean(PseudocalanusSite)) %>% 
+  summarise(SmPseudocalanus=mean(PseudocalanusSite)) %>% 
   ungroup
-#View(Pseudocalanus)
-MaySmallZoop <- merge(MaySmallZoop,Pseudocalanus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmPseudocalanus,all.x=T)
 
 # Racovitzanus antarcticus, all stages
-Rantacrticus = SCZo1GAK %>%
+SmRantacrticus = SCZo1GAK %>%
   filter(species %in% c("Racovitzanus_antarcticus", "antarcticus")) %>% 
   filter(Month == 5) %>%
   group_by(Year, stationID) %>%
   summarise(RantacrticusSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Rantacrticus=mean(RantacrticusSite)) %>% 
+  summarise(SmRantacrticus=mean(RantacrticusSite)) %>% 
   ungroup
-#View(Rantacrticus)
-MaySmallZoop <- merge(MaySmallZoop,Rantacrticus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmRantacrticus,all.x=T)
 
 # Scolecithricella spp., all stages
-Scolecithricella = SCZo1GAK %>%
+SmScolecithricella = SCZo1GAK %>%
   filter(species %in% c("Scolecithricella_minor", "Scolecithricella_sp.", "Pseudoamallothrix_ovata", "Pseudoamallothrix_sp.", "minor") | sciName == "Scolecithricella_sp.") %>%  # "ovata" not in species column
   filter(Month == 5) %>%
   group_by(Year, stationID) %>%
   summarise(ScolecithricellaSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Scolecithricella=mean(ScolecithricellaSite)) %>% 
+  summarise(SmScolecithricella=mean(ScolecithricellaSite)) %>% 
   ungroup
-#View(Scolecithricella)
-MaySmallZoop <- merge(MaySmallZoop,Scolecithricella,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmScolecithricella,all.x=T)
 
 # Tortanus discaudata, all stages; NB none in May GAK samples (only appeared once in sampling record)
-Tdiscaudata = SCZo1GAK %>%
+SmTdiscaudata = SCZo1GAK %>%
   filter(species %in% c("Tortanus_discaudatus", "discaudatus")) %>% 
   filter(Month == 5) %>%
   group_by(Year, stationID) %>%
   summarise(TdiscaudataSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Tdiscaudata=mean(TdiscaudataSite)) %>% 
+  summarise(SmTdiscaudata=mean(SmTdiscaudataSite)) %>% 
   ungroup
-#View(Tdiscaudata)
 
 # -----------------------
 
 # 2. Other copepod taxa present in CalVET nets but not assigned to size / net group by Coyle & Pinchuk 2003:
 
 # Metridia sp. Follow Coyle & Pinchuk's 2003 classification for M. okhotensis
-Metridia = SCZo1GAK %>%
+SmMetridia = SCZo1GAK %>%
   filter(species == "Metridia_sp." | sciName %in% c("Metridia sp.", "Metridia spp.")) %>%
   filter(Month == 5) %>%
   group_by(Year, stationID) %>%
   summarise(MetridiaSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Metridia=mean(MetridiaSite)) %>% 
+  summarise(SmMetridia=mean(MetridiaSite)) %>% 
   ungroup
-#View(Metridia)
-MaySmallZoop <- merge(MaySmallZoop,Metridia,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMetridia,all.x=T)
 
 # Microsetella sp. only found in 2004.  Adult females are 0.02mg. Therefore take all stages from CalVET nets
-Microsetella = SCZo1GAK %>%
+SmMicrosetella = SCZo1GAK %>%
   filter(species == "Microsetella_sp." | sciName == "Microsetella sp.") %>%
   filter(Month == 5) %>%
   group_by(Year, stationID) %>%
   summarise(MicrosetellaSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Microsetella=mean(MicrosetellaSite)) %>% 
+  summarise(SmMicrosetella=mean(MicrosetellaSite)) %>% 
   ungroup
-#View(Microsetella)
-MaySmallZoop <- merge(MaySmallZoop,Microsetella,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMicrosetella,all.x=T)
 
 # Monstrilla sp. (infraclass Neocopepod).  Not sure, and only approx 20 entries across entire dataset, therefore leave this for now
 #Parasitic on marine benthic inverts (polychaetes, gastropods); only the first nauplius & adult stages are free-swimming (adults don't feed)
 
 # Neocalanus sp.  Follow Coyle & Pinchuk's 2003 classification for N. cristatus; NB none of these stages are in May GAK samples
-Neocalanus = SCZo1GAK %>%
+SmNeocalanus = SCZo1GAK %>%
   filter(species == "Neocalanus_sp." | sciName == "Neocalanus_sp.") %>% 
   filter(stage %in% c("I", "II", "C1", "C2")) %>%
   filter(Month == 5) %>%
@@ -591,9 +520,8 @@ Neocalanus = SCZo1GAK %>%
   summarise(NeocalanusSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Neocalanus=mean(NeocalanusSite)) %>% 
+  summarise(SmNeocalanus=mean(NeocalanusSite)) %>% 
   ungroup
-#View(Neocalanus)
 
 
 # -----------------------
@@ -603,23 +531,24 @@ Neocalanus = SCZo1GAK %>%
 # class Branchiopoda, family Podonidae (Cladocerans: Evadne sp.  & Podon sp.)  
 # Judging from length comparisons with Neocalanus sp (these are much smaller in length) on Seward Line website, all stages of Branchiopods should come from CalVET
 # NB None in May GAK samples
-Podonidae = SCZo1GAK %>%
+SmPodonidae = SCZo1GAK %>%
   filter(family == "Podonidae") %>% 
   filter(Month == 5) %>%
   group_by(Year, stationID) %>%
   summarise(PodonidaeSite=sum(biomass)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(Podonidae=mean(PodonidaeSite)) %>% 
+  summarise(SmPodonidae=mean(PodonidaeSite)) %>% 
   ungroup
-#View(Podonidae)
 
-# Add Gastropoda?
 
 # --------------------------------------------------------------------------------------------------------------
 
 # Total biomass of small zooplankton in May at GAK sites:
 View(MaySmallZoop)
+setwd("~/Google Drive/GoA project/Seward Line Zooplankton")
+write.csv(MaySmallZoop, "MaySmallZoop.csv", row.names = FALSE)
+
 MaySmallZoop$tot <- rowSums(MaySmallZoop[,2:20], na.rm=T)
 # check sum of first row; should be  0.07037575   0.070375753
 0.0005089881 + 0.0013066137 + 0.002122075 + 0.000822537 + 0.0006138843 + 0.0004410340 +0.0009865588 + 0.0020116515 + 0.0091233778 +0.0002815145 + 0.04214510 + 0.0011274123 + 0.0088338052 + 0.0000512000
@@ -628,4 +557,4 @@ View(MaySmallZoop)
 ggplot(data=MaySmallZoop, aes(y=tot, x=Year)) +
   geom_point(size=4) + geom_line() + theme_bw() + scale_y_log10() + ylab("May Small Zooplankton Total Biomass (g WW / m3)") + xlab("Year")
 
-# trend does not reflect abundance trends posted on Seward Line website.  Make sure data have not gone missing from the dataset post-2004-ish
+# trend does not reflect abundance trends posted on Seward Line website.  Make sure data are not missing post-2004-ish
