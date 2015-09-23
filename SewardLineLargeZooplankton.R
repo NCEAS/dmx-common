@@ -22,6 +22,7 @@ SMZo <- read.csv(file=textConnection(SMZo1),stringsAsFactors=F)
 head(SMZo)
 str(SMZo)
 
+# extract time, day, month, year  and remove empty taxonomic columns
 SMZo2 = SMZo %>%
   rename(sciName = specimen) %>%
   mutate(abundance = as.numeric(abundance)) %>% 
@@ -40,7 +41,7 @@ SMZo2 = SMZo %>%
   mutate(Day=as.numeric(day)) %>%
   select(-ship, -tow, -notes, -kingdom, -Phylum, -Subphylum, - Class, - Subclass, -Infraclass, - Order, 
          -Suborder, -Infraorder, -Family, -Genus, -Species, -startDateTime, -endDateTime, -date, 
-         -year, -month, -day, -gearSize, -meshSize) 
+         -year, -month, -day) 
 # Error "In eval(substitute(expr), envir, enclos) : NAs introduced by coercion"
 # This refers to 2 rows in dataset that are mostly NA - ie not in fact an error in code
 str(SMZo2)
@@ -86,17 +87,17 @@ View(SMZo2.c)
 # C. Add taxonomic information:
 
 # Query ITIS for higher order taxonomic information:
-SMZo2.c.specieslist <- unique(SMZo2.c$sciName)
-tax.info = tax_name(query = SMZo2.c.specieslist, 
-                    get = c("kingdom", "phylum", "subphylum", "class", "subclass", "infraclass", 
-                            "order", "suborder", "infraorder", "suborder", "infraorder", "family", 
-                            "genus", "species"), 
-                    db = "itis")
-tax.info1 = tax.info %>%
-  mutate(sciName = query) %>%
-  select(-db, -query)
-View(tax.info1)
-# code to create tax.info takes 16min to run, with sporadic inputs needed
+#SMZo2.c.specieslist <- unique(SMZo2.c$sciName)
+#tax.info = tax_name(query = SMZo2.c.specieslist, 
+#                    get = c("kingdom", "phylum", "subphylum", "class", "subclass", "infraclass", 
+#                            "order", "suborder", "infraorder", "suborder", "infraorder", "family", 
+#                            "genus", "species"), 
+#                    db = "itis")
+#tax.info1 = tax.info %>%
+#  mutate(sciName = query) %>%
+#  select(-db, -query)
+#View(tax.info1)
+# The above code to create tax.info takes 16min to run, with sporadic inputs needed
 # you can upload the resulting file from here instead:
 URL_tax.info1 <- "https://drive.google.com/uc?export=download&id=0B1XbkXxdfD7ucEJFVlV5VnBhVjA"
 tax.info1Get <- GET(URL_tax.info1)
@@ -112,62 +113,63 @@ str(SMZo2.d)
 
 # -------------------------------------------------------------------------
 
-# D. Extract Seward Line (GAK) sites
-SMZo2.d.GAK = SMZo2.d %>%
-  filter(stationID %in% c("GAK1", "GAK2", "GAK3", "GAK4", "GAK5", "GAK6", "GAK7", "GAK8", "GAK9", "GAK10", "GAK11", "GAK12", "GAK13"))
-head(SMZo2.d.GAK)
-
-# View temporal distribution of samples:
-plot(SMZo2.d.GAK$Year ~ SMZo2.d.GAK$Month, pch=16) # MOCNESS & Multi net
-
-# -------------------------------------------------------------------------
-
 # E. Integrate samples (biomass) over 100m depth
 # MOCNESS & MultiNets were collected for every 20m depth increment over the 100m depth of the water column
 # to render these comparable to CalVET net, sum densities and biomass for all 20m depth increments for each sampling occasion
 
-DepthIntGAK.b = aggregate(SMZo2.d.GAK$biomass, by = list(
-  cruiseID = SMZo2.d.GAK$cruiseID,
-  Year = SMZo2.d.GAK$Year,
-  Month = SMZo2.d.GAK$Month,
-  Day = SMZo2.d.GAK$Day,
-  stationID = SMZo2.d.GAK$stationID,
-  gear = SMZo2.d.GAK$gear,
-  sciName = SMZo2.d.GAK$sciName,
-  stage = SMZo2.d.GAK$stage),
+DepthInt.b = aggregate(SMZo2.d$biomass, by = list(
+  cruiseID = SMZo2.d$cruiseID,
+  Year = SMZo2.d$Year,
+  Month = SMZo2.d$Month,
+  Day = SMZo2.d$Day,
+  stationID = SMZo2.d$stationID,
+  gear = SMZo2.d$gear,
+  sciName = SMZo2.d$sciName,
+  stage = SMZo2.d$stage),
   sum)
-DepthIntGAK.b = DepthIntGAK.b %>%
+DepthInt.b = DepthInt.b %>%
   rename(biomass = x) # assign name to new column
-View(DepthIntGAK.b)
-dim(DepthIntGAK.b) # 35822     9
+View(DepthInt.b)
+dim(DepthInt.b) # 50561     9
 
 
 # Integrate abundance over 100m depth
-DepthIntGAK.a = aggregate(SMZo2.d.GAK$abundance, by = list(
-  cruiseID = SMZo2.d.GAK$cruiseID,
-  Year = SMZo2.d.GAK$Year,
-  Month = SMZo2.d.GAK$Month,
-  Day = SMZo2.d.GAK$Day,
-  stationID = SMZo2.d.GAK$stationID,
-  gear = SMZo2.d.GAK$gear,
-  sciName = SMZo2.d.GAK$sciName,
-  stage = SMZo2.d.GAK$stage),
+DepthInt.a = aggregate(SMZo2.d$abundance, by = list(
+  cruiseID = SMZo2.d$cruiseID,
+  Year = SMZo2.d$Year,
+  Month = SMZo2.d$Month,
+  Day = SMZo2.d$Day,
+  stationID = SMZo2.d$stationID,
+  gear = SMZo2.d$gear,
+  sciName = SMZo2.d$sciName,
+  stage = SMZo2.d$stage),
   sum)
-DepthIntGAK.a = DepthIntGAK.a %>%
+DepthInt.a = DepthInt.a %>%
   rename(abundance = x) # assign name to new column
-View(DepthIntGAK.a)
-dim(DepthIntGAK.a) # 35822     9
+View(DepthInt.a)
+dim(DepthInt.a) # 50561     9
 
 # Merge depth-integrated biomass and abundance:
-DepthIntGAK<- merge(DepthIntGAK.a,DepthIntGAK.b,all.x=T)
-View(DepthIntGAK)
-dim(DepthIntGAK) # should be  35822    10
+DepthInt<- merge(DepthInt.a,DepthInt.b,all.x=T)
+View(DepthInt)
+dim(DepthInt) # should be   50561    10
 
 # Messy script - clean this up!
 # Merge again with taxonomic info 
-DepthIntGAK.taxinfo <- merge(DepthIntGAK,tax.info1,all.x=T)
-View(DepthIntGAK.taxinfo)
-dim(DepthIntGAK.taxinfo) # should be 35822    22
+DepthInt.taxinfo <- merge(DepthInt,tax.info1,all.x=T)
+View(DepthInt.taxinfo)
+dim(DepthInt.taxinfo) # should be 50561    22
+
+
+# -------------------------------------------------------------------------
+# D. Extract Seward Line (GAK) sites
+GAK = DepthInt.taxinfo %>%
+  filter(stationID %in% c("GAK1", "GAK2", "GAK3", "GAK4", "GAK5", "GAK6", "GAK7", "GAK8", "GAK9", "GAK10", "GAK11", "GAK12", "GAK13"))
+head(GAK)
+
+# View temporal distribution of samples:
+plot(GAK$Year ~ GAK$Month, pch=16) # MOCNESS & Multi net
+
 
 # -------------------------------------------------------------------------
 
@@ -192,7 +194,7 @@ dim(DepthIntGAK.taxinfo) # should be 35822    22
 
 
 # Extract May samples:
-May = DepthIntGAK.taxinfo %>%
+May = GAK %>%
   filter(Month == 5)
 
 # Create dataframe with years:
