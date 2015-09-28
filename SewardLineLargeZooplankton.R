@@ -4,7 +4,7 @@
 #####                     September 2015                         ######
 #######################################################################
 
-# Caution: Gear change in 2005 (335um mesh to 500um mesh) ???
+# Caution: still need to deal with missing stationIDs for 1500 rows
 
 ## load packages
 library(plyr)
@@ -14,13 +14,45 @@ library(httr)
 library(ggplot2)
 library(taxize)
 
-# A. Load data: MOCNESS & MultiNet (meshSize = 335 & 500 um), 1998-2011:
-URL_SMZo <- "http://gulfwatch.nceas.ucsb.edu/goa/d1/mn/v1/object/df35b.61.3"
+# A. Load data: MOCNESS & MultiNet (meshSize = 500 um), 1998-2011:
+URL_SMZo <- "http://gulfwatch.nceas.ucsb.edu/goa/d1/mn/v1/object/df35b.61.4"
 SMZoGet <- GET(URL_SMZo)
 SMZo1 <- content(SMZoGet, as='text')
-SMZo <- read.csv(file=textConnection(SMZo1),stringsAsFactors=F)
+SMZo <- read.csv(file=textConnection(SMZo1),stringsAsFactors=F, na.strings = c("NA", " ", "")) #  na.strings = c("NA", " ", "")  turns empty spots into NA; consider also strip.white
 head(SMZo)
 str(SMZo)
+dim(SMZo)
+View(SMZo)
+
+# -------------------------------------------------------------------------
+
+# Check for NAs:
+for(i in 1:ncol(SMZo)){ # I think this is just doing column names?
+  print(unique(is.na(i)))
+}
+
+# test:
+i=5 # this is stationID
+print(unique(is.na(i))) # FALSE (should be FALSE TRUE)
+
+# stationID == NA for 1531 rows:
+unique(is.na(SMZo$stationID)) # [1] FALSE  TRUE
+sum(is.na(SMZo$stationID)) # 1531
+
+# try this:
+for(i in SMZo[1:i,]){ # still does not work; there should be a mix of true & false in each column
+  print(unique(is.na(i)))
+}
+
+# -------------------------------------------------------------------------
+# Clean up missing stationID:
+# extract unique startDateTime + stationID stamp
+
+nas = SMZo %>%
+  filter(stationID=="NA")
+View(nas) # argh
+
+# -------------------------------------------------------------------------
 
 # extract time, day, month, year  and remove empty taxonomic columns
 SMZo2 = SMZo %>%
@@ -45,6 +77,7 @@ SMZo2 = SMZo %>%
 # Error "In eval(substitute(expr), envir, enclos) : NAs introduced by coercion"
 # This refers to 2 rows in dataset that are mostly NA - ie not in fact an error in code
 str(SMZo2)
+
 
 # -------------------------------------------------------------------------
 
