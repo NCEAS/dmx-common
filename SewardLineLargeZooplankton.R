@@ -4,11 +4,12 @@
 #####                     September 2015                         ######
 #######################################################################
 
-# Caution: still need to deal with missing stationIDs for 1500 rows
+# Caution: still need to deal with missing stationIDs for 1531 rows
 
 ## load packages
 library(plyr)
 library(dplyr)
+library(tidyr)
 library(stringr)
 library(httr)
 library(ggplot2)
@@ -18,7 +19,7 @@ library(taxize)
 URL_SMZo <- "http://gulfwatch.nceas.ucsb.edu/goa/d1/mn/v1/object/df35b.61.4"
 SMZoGet <- GET(URL_SMZo)
 SMZo1 <- content(SMZoGet, as='text')
-SMZo <- read.csv(file=textConnection(SMZo1),stringsAsFactors=F, na.strings = c("NA", " ", "")) #  na.strings = c("NA", " ", "")  turns empty spots into NA; consider also strip.white
+SMZo <- read.csv(file=textConnection(SMZo1),stringsAsFactors=F, na.strings = c("NA", " ", ""))  # turns empty spots into NA; consider also strip.white
 head(SMZo)
 str(SMZo)
 dim(SMZo)
@@ -27,33 +28,30 @@ View(SMZo)
 # -------------------------------------------------------------------------
 
 # Check for NAs:
-for(i in 1:ncol(SMZo)){ # I think this is just doing column names?
-  print(unique(is.na(i)))
+for(i in 1:ncol(SMZo)){
+  print(any(is.na(SMZo[,i])))
 }
 
-# test:
-i=5 # this is stationID
-print(unique(is.na(i))) # FALSE (should be FALSE TRUE)
-
-# stationID == NA for 1531 rows:
-unique(is.na(SMZo$stationID)) # [1] FALSE  TRUE
-sum(is.na(SMZo$stationID)) # 1531
-
-# try this:
-for(i in SMZo[1:i,]){ # still does not work; there should be a mix of true & false in each column
-  print(unique(is.na(i)))
-}
+sum(is.na(SMZo$stationID)) # there are 1531 rows with missing stationID
 
 # -------------------------------------------------------------------------
-# Clean up missing stationID:
-# extract unique startDateTime + stationID stamp
+# Clean up missing stationID
+# create table of unique date/time and stationIDs
+dts = SMZo %>%
+  select(startDateTime, stationID) %>%
+  filter(stationID != "NA") %>%
+  distinct()
+#View(dts)
+any(is.na(dts$stationID)) # test for presence of NA in stationID; should be FALSE
 
-nas = SMZo %>%
-  filter(stationID=="NA")
-View(nas) # argh
+# merge with main file; this replaces missing stationIDs in main file
+SMZo1 = merge(dts, SMZo, all.x=T)
+#View(SMZo1)
+any(is.na(SMZo1$stationID)) # test for presence of NA in stationID; should be FALSE
 
 # -------------------------------------------------------------------------
 
+# B. Cleaning
 # extract time, day, month, year  and remove empty taxonomic columns
 SMZo2 = SMZo %>%
   rename(sciName = specimen) %>%
@@ -79,10 +77,7 @@ SMZo2 = SMZo %>%
 str(SMZo2)
 
 
-# -------------------------------------------------------------------------
-
-# B. Clean up the species names
-
+# Clean up the species names
 unique(sort(SMZo2$sciName))
 SMZo2.c = SMZo2 %>%
   filter(sciName != "NA") %>% # remove rows for which sciName == NA (2 rows) until dataset is checked for source of NA
@@ -146,10 +141,11 @@ str(SMZo2.d)
 
 # -------------------------------------------------------------------------
 
-# E. Integrate samples (biomass) over 100m depth
+# E. Integrate over 100m depth
 # MOCNESS & MultiNets were collected for every 20m depth increment over the 100m depth of the water column
 # to render these comparable to CalVET net, sum densities and biomass for all 20m depth increments for each sampling occasion
 
+# Biomass:
 DepthInt.b = aggregate(SMZo2.d$biomass, by = list(
   cruiseID = SMZo2.d$cruiseID,
   Year = SMZo2.d$Year,
@@ -166,7 +162,7 @@ View(DepthInt.b)
 dim(DepthInt.b) # 50561     9
 
 
-# Integrate abundance over 100m depth
+# Abundance:
 DepthInt.a = aggregate(SMZo2.d$abundance, by = list(
   cruiseID = SMZo2.d$cruiseID,
   Year = SMZo2.d$Year,
@@ -225,6 +221,14 @@ plot(GAK$Year ~ GAK$Month, pch=16) # MOCNESS & Multi net
 
 # NB copepod stages I, II, III, etc are the same as stages C1, C2, C3, etc ... (shift in nomenclature in the database in 2005)
 
+
+# Create function for May biomass:
+if(family == "Aetideidae") {
+  filter(stage %in% c("V", "C5", "AF", "AM")) 
+}
+else (family == "Calanus marshallae") {
+  filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) 
+}
 
 # Extract May samples:
 May = GAK %>%
