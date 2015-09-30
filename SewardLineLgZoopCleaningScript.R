@@ -17,12 +17,11 @@ library(taxize)
 URL_SMZo <- "http://gulfwatch.nceas.ucsb.edu/goa/d1/mn/v1/object/df35b.61.4"
 SMZoGet <- GET(URL_SMZo)
 SMZo1 <- content(SMZoGet, as='text')
-SMZo <- read.csv(file=textConnection(SMZo1),stringsAsFactors=F, na.strings = c("NA", " ", ""))  # turns empty spots into NA; consider also strip.white
-head(SMZo)
-str(SMZo)
-dim(SMZo)
+SMZo <- read.csv(file=textConnection(SMZo1),stringsAsFactors=F, na.strings = c("NA", " ", ""))
 View(SMZo)
+str(SMZo)
 
+# ------------------------------
 
 # Check for NAs:
 for(i in 1:ncol(SMZo)){
@@ -40,17 +39,17 @@ dts = SMZo %>%
   filter(stationID != "NA") %>%
   distinct()
 #View(dts)
-any(is.na(dts$stationID)) # test for presence of NA in stationID; should be FALSE
+any(is.na(dts$stationID)) # should be FALSE
 
 # merge with main file; this replaces missing stationIDs in main file
 SMZo1 = merge(dts, SMZo, all.x=T)
 #View(SMZo1)
-any(is.na(SMZo1$stationID)) # test for presence of NA in stationID; should be FALSE
+any(is.na(SMZo1$stationID)) # should be FALSE
 
 # ------------------------------
 
 # extract time, day, month, year  and remove empty taxonomic columns
-SMZo2 = SMZo %>%
+SMZo2 = SMZo1 %>%
   rename(sciName = specimen) %>%
   mutate(abundance = as.numeric(abundance)) %>% 
   mutate(time=strsplit(as.character(startDateTime),split=" ") %>%
@@ -77,7 +76,7 @@ str(SMZo2)
 
 # Clean up the species names
 unique(sort(SMZo2$sciName))
-SMZo2.c = SMZo2 %>%
+SMZo3 = SMZo2 %>%
   filter(sciName != "NA") %>% # remove rows for which sciName == NA (2 rows) until dataset is checked for source of NA
   mutate(sciName = gsub(" $", "", sciName, perl=T)) %>%  #remove trailing white spaces
   mutate(sciName = gsub("_sp.$", "", sciName)) %>% 
@@ -105,16 +104,16 @@ SMZo2.c = SMZo2 %>%
   mutate(sciName = gsub(" large$", "", sciName)) %>% # this information is in stage vector
   mutate(sciName = gsub(" echinospira$", "", sciName)) %>%
   mutate(sciName = gsub(" $", "", sciName, perl=T))
-unique(sort(SMZo2.c$sciName))
-View(SMZo2.c)
+unique(sort(SMZo3$sciName))
+View(SMZo3)
 
 # ------------------------------
 
 # Add taxonomic information:
 
 # Query ITIS for higher order taxonomic information:
-#SMZo2.c.specieslist <- unique(SMZo2.c$sciName)
-#tax.info = tax_name(query = SMZo2.c.specieslist, 
+#SMZo3.specieslist <- unique(SMZo3$sciName)
+#tax.info = tax_name(query = SMZo3.specieslist, 
 #                    get = c("kingdom", "phylum", "subphylum", "class", "subclass", "infraclass", 
 #                            "order", "suborder", "infraorder", "suborder", "infraorder", "family", 
 #                            "genus", "species"), 
@@ -131,9 +130,11 @@ tax.info2 <- content(tax.info1Get, as='text')
 tax.info1 <- read.csv(file=textConnection(tax.info2),stringsAsFactors=F)
 View(tax.info1)
 
-# Merge [dataset with cleaned species names] and [taxonomic information]
-SMZo2.d <- merge(SMZo2.c,tax.info1,all.x=T)
-View(SMZo2.d)
-dim(SMZo2.d) # should be 163391     33
-str(SMZo2.d)
+# Merge cleaned dataset with taxonomic information
+SMZo4 <- merge(SMZo3,tax.info1,all.x=T)
+View(SMZo4)
+dim(SMZo4) # should be 163391     33
+str(SMZo4)
+
+
 
