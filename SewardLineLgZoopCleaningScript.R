@@ -18,7 +18,7 @@ URL_SMZo <- "http://gulfwatch.nceas.ucsb.edu/goa/d1/mn/v1/object/df35b.61.4"
 SMZoGet <- GET(URL_SMZo)
 SMZo1 <- content(SMZoGet, as='text')
 SMZo <- read.csv(file=textConnection(SMZo1),stringsAsFactors=F, na.strings = c("NA", " ", ""))
-View(SMZo)
+#View(SMZo)
 str(SMZo)
 
 # ------------------------------
@@ -49,6 +49,7 @@ any(is.na(SMZo1$stationID)) # should be FALSE
 # ------------------------------
 
 # extract time, day, month, year  and remove empty taxonomic columns
+# add something here to clean up text for units in gearSize
 SMZo2 = SMZo1 %>%
   rename(sciName = specimen) %>%
   mutate(abundance = as.numeric(abundance)) %>% 
@@ -105,7 +106,7 @@ SMZo3 = SMZo2 %>%
   mutate(sciName = gsub(" echinospira$", "", sciName)) %>%
   mutate(sciName = gsub(" $", "", sciName, perl=T))
 unique(sort(SMZo3$sciName))
-View(SMZo3)
+#View(SMZo3)
 
 # ------------------------------
 
@@ -128,11 +129,11 @@ URL_tax.info1 <- "https://drive.google.com/uc?export=download&id=0B1XbkXxdfD7ucE
 tax.info1Get <- GET(URL_tax.info1)
 tax.info2 <- content(tax.info1Get, as='text')
 tax.info1 <- read.csv(file=textConnection(tax.info2),stringsAsFactors=F)
-View(tax.info1)
+#View(tax.info1)
 
 # Merge cleaned dataset with taxonomic information
 SMZo4 <- merge(SMZo3,tax.info1,all.x=T)
-View(SMZo4)
+#View(SMZo4)
 dim(SMZo4) # should be 163391     33
 str(SMZo4)
 
