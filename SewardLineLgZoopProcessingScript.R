@@ -6,7 +6,7 @@
 
 # Call data from source file
 source('SewardLineLgZoopCleaningScript.R')
-View(SMZo4)
+#View(SMZo4)
 
 # Integrate over 100m depth
 # MOCNESS & MultiNets were collected for every 20m depth increment over the 100m depth of the water column
@@ -482,8 +482,7 @@ MayLgZoBiomass <- merge(MayLgZoBiomass,Gastropoda,all.x=T)
 # Aetideidae, stages V, Adults
 AetideidaeAb = May %>%
   filter(family == "Aetideidae") %>%
-  #filter(stage %in% c("V", "C5", "AF", "AM")) %>%
-  filter(stage %in% c("AF", "AM")) %>%
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
   summarise(AetideidaeAbSite=sum(abundance)) %>%
   ungroup %>%
@@ -495,8 +494,7 @@ AetideidaeAb = May %>%
 # Calanus marshallae, stages IV, V, adults
 CmarshallaeAb = May %>%
   filter(sciName == "Calanus marshallae") %>% 
-  #filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
-  filter(stage %in% c("AF", "AM")) %>%
+  filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
   summarise(CmarshallaeAbSite=sum(abundance)) %>%
   ungroup %>%
@@ -508,8 +506,7 @@ CmarshallaeAb = May %>%
 # Calanus pacificus, stages V, adults
 CpacificusAb = May %>%
   filter(sciName == "Calanus pacificus") %>%
-  #filter(stage %in% c("V", "C5", "AF", "AM")) %>%
-  filter(stage %in% c("AF", "AM")) %>%
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
   summarise(CpacificusAbSite=sum(abundance)) %>% 
   ungroup %>%
@@ -521,8 +518,7 @@ CpacificusAb = May %>%
 # Candacia, stages IV, V, adults
 CandaciaAb = May %>%
   filter(genus == "Candacia") %>% 
-  #filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
-  filter(stage %in% c("AF", "AM")) %>%
+  filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
   summarise(CandaciaAbSite=sum(abundance)) %>% 
   ungroup %>%
@@ -534,8 +530,7 @@ CandaciaAb = May %>%
 # Epilabidocera amphitrites, stages IV, V, adults;  add in Apr 30 sample from GAK2 in 2002 (cruiseID == hx258)
 EamphitritesAb = May %>%
   filter(species == "Epilabidocera amphitrites") %>% 
-  #filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
-  filter(stage %in% c("AF", "AM")) %>%
+  filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
   summarise(EamphitritesAbSite=sum(abundance)) %>% 
   ungroup %>%
@@ -547,8 +542,7 @@ EamphitritesAb = May %>%
 # Eucalanus bungii, stages IV, V, adults
 EbungiiAb = May %>%
   filter(sciName == "Eucalanus bungii") %>% 
-  #filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
-  filter(stage %in% c("AF", "AM")) %>%
+  filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
   summarise(EbungiiAbSite=sum(abundance)) %>% 
   ungroup %>%
@@ -560,8 +554,7 @@ EbungiiAb = May %>%
 # Euchaeta elongata, stages III-V, adults
 PelongataAb = May %>%
   filter(species %in% c("Paraeuchaeta elongata", "Elongata")) %>% 
-  #filter(stage %in% c("III", "IV", "V", "C3", "C4", "C5", "AF", "AM")) %>%
-  filter(stage %in% c("AF", "AM")) %>%
+  filter(stage %in% c("III", "IV", "V", "C3", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
   summarise(PelongataAbSite=sum(abundance)) %>% 
   ungroup %>%
@@ -573,8 +566,7 @@ PelongataAb = May %>%
 # Heterorhabdus spp., stages IV, V, adults
 HeterorhabdusAb = May %>%
   filter(genus == "Heterorhabdus") %>% 
-  #filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
-  filter(stage %in% c("AF", "AM")) %>%
+  filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
   summarise(HeterorhabdusAbSite=sum(abundance)) %>% 
   ungroup %>%
@@ -586,8 +578,7 @@ HeterorhabdusAb = May %>%
 # Heterostylites spp., stages V, adults; none in May GAK samples
 HeterostylitesAb = May %>%
   filter(genus == "Heterostylites") %>% 
-  #filter(stage %in% c("V", "C5", "AF", "AM")) %>%
-  filter(stage %in% c("AF", "AM")) %>%
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
   summarise(HeterostylitesAbSite=sum(abundance)) %>% 
   ungroup %>%
@@ -599,8 +590,7 @@ HeterostylitesAb = May %>%
 # Lucicutia spp., stages V, adults
 LucicutiaAb = May %>%
   filter(genus == "Lucicutia") %>% 
-  #filter(stage %in% c("V", "C5", "AF", "AM")) %>%
-  filter(stage %in% c("AF", "AM")) %>%
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
   summarise(LucicutiaAbSite=sum(abundance)) %>% 
   ungroup %>%
@@ -612,8 +602,7 @@ LucicutiaAb = May %>%
 # Metridia okhotensis, stages V, adults
 MokhotensisAb = May %>%
   filter(sciName == "Metridia okhotensis") %>% 
-  #filter(stage %in% c("V", "C5", "AF", "AM")) %>%
-  filter(stage %in% c("AF", "AM")) %>%
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
   summarise(MokhotensisAbSite=sum(abundance)) %>% 
   ungroup %>%
@@ -638,7 +627,6 @@ MpacificaAb = May %>%
 NcristatusAb = May %>%
   filter(sciName == "Neocalanus cristatus") %>% 
   filter(stage %in% c("III", "IV", "V", "C3", "C4", "C5", "AF", "AM")) %>%
-  #filter(stage %in% c("AF", "AM")) %>%
   group_by(Year, stationID) %>%
   summarise(NcristatusAbSite=sum(abundance)) %>% 
   ungroup %>%
@@ -651,7 +639,6 @@ NcristatusAb = May %>%
 NpflemingeriAb = May %>%
   filter(sciName %in% c("Neocalanus plumchrus", "Neocalanus flemingeri")) %>% 
   filter(stage %in% c("IV", "V", "C4", "C5", "CV_large", "AF", "AM")) %>%
-  #filter(stage %in% c("AF", "AM")) %>%
   group_by(Year, stationID) %>%
   summarise(NpflemingeriAbSite=sum(abundance)) %>% 
   ungroup %>%
@@ -663,8 +650,7 @@ NpflemingeriAb = May %>%
 # Pleuromamma spp., stages V, adults 
 PleuromammaAb = May %>%
   filter(genus == "Pleuromamma") %>% 
-  #filter(stage %in% c("V", "C5", "AF", "AM")) %>%
-  filter(stage %in% c("AF", "AM")) %>%
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
   summarise(PleuromammaAbSite=sum(abundance)) %>% 
   ungroup %>%
@@ -680,8 +666,7 @@ PleuromammaAb = May %>%
 # None in GAK May samples
 GprincepsAb = May %>%
   filter(sciName == "Gaussia princeps") %>%
-  #filter(stage %in% c("V", "C5", "AF", "AM")) %>%
-  filter(stage %in% c("AF", "AM")) %>%
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
   summarise(GprincepsAbSite=sum(abundance)) %>% 
   ungroup %>%
@@ -694,8 +679,7 @@ GprincepsAb = May %>%
 # ie take stages V, adults from large nets
 MetridiaAb = May %>%
   filter(sciName == "Metridia") %>%
-  #filter(stage %in% c("V", "C5", "AF", "AM")) %>%
-  filter(stage %in% c("AF", "AM")) %>%
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
   summarise(MetridiaAbSite=sum(abundance)) %>% 
   ungroup %>%
@@ -712,7 +696,6 @@ MetridiaAb = May %>%
 NeocalanusAb = May %>%
   filter(sciName == "Neocalanus") %>% 
   filter(stage %in% c("III", "IV", "V", "C3", "C4", "C5", "AF", "AM")) %>%
-  #filter(stage %in% c("AF", "AM")) %>%
   group_by(Year, stationID) %>%
   summarise(NeocalanusAbSite=sum(abundance)) %>% 
   ungroup %>%
