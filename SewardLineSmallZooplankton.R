@@ -4,116 +4,19 @@
 #####                      August 2015                           ######
 #######################################################################
 
-## load packages
-library(dplyr)
-library(httr)
-library(ggplot2)
-
-# A. Load and merge datasets
-
-# A.i  Load CalVET net (meshSize = 149 um), 1998-2011:
-#URL_SCZo <- "http://gulfwatch.nceas.ucsb.edu/goa/d1/mn/v1/object/df35b.56.3"
-#SCZoGet <- GET(URL_SCZo)
-#SCZo1 <- content(SCZoGet, as='text')
-#SCZo <- read.csv(file=textConnection(SCZo1),stringsAsFactors=F, strip.white=TRUE)
-#head(SCZo)
+# Call data from source file
+source('SewardLineSmallZoopCleaningScript.R')
+View(SCZo1)
 
 
-# problem with dates in online file (compared with https://www.sfos.uaf.edu/sewardline/results/DataByCruise2.html)
-# Temporarily use locally-stored file with corrected dates until changes are verified by Russ Hopcroft
-setwd("~/Google Drive/GoA project/Data/Datasets/Data Packages/AOOS NCEAS Packages/Seward Line Zooplankton 97-11")
-SCZo.a=read.csv('df35b.56.4-ltopZooplanktonData_CW corrected TXF06 date.csv', header=T, stringsAsFactors=F, strip.white=TRUE)
-head(SCZo.a)
-
-
-# Pull 2012 data from AOOS Ocean Workspace (requires log-in here: https://workspace.aoos.org/login).
-# Files online are .xls, so I'll use .csv saved locally on my machine (can I upload these to our server?)
-# Load CalVET net (meshSize = 149 um), 2010-2012:
-setwd("~/Google Drive/GoA project/Data/Datasets/Data Packages/AOOS Ocean Workspace Packages/Seward Line Zooplankton 2010-12")
-SCZo.b=read.csv('Seward_Zoodata_Calvet_2010_2012_update.csv', header=T, stringsAsFactors=F, strip.white=TRUE)
-head(SCZo.b)
-str(SCZo.b)
-names(SCZo.b)
-
-# 1997-2011 dataset: extract year, month, day, time:
-SCZo.a1=SCZo.a %>%
-  mutate(time=strsplit(as.character(dateTime),split=" ") %>%
-           sapply(function(x) x[2])) %>%
-  #mutate(Time=as.numeric(time)) %>%  #creates a vector of NA, probably due to ":"
-  mutate(date=strsplit(as.character(dateTime),split=" ") %>%
-           sapply(function(x) x[1])) %>%
-  mutate(Date=as.Date(date, "%m/%d/%y")) %>%   # NB output is reordered as yyyy-mm-dd
-  mutate(year=strsplit(as.character(Date),split="-") %>%
-           sapply(function(x) x[1])) %>%
-  mutate(Year=as.numeric(year)) %>%
-  mutate(month=strsplit(as.character(Date),split="-") %>%
-           sapply(function(x) x[2])) %>%
-  mutate(Month=as.numeric(month)) %>%
-  mutate(day=strsplit(as.character(Date),split="-") %>%
-           sapply(function(x) x[3])) %>%
-  mutate(Day=as.numeric(day)) %>%
-  #gsub("_"," ",species) %>%  #Error in gsub(., "_", " ", species) : object 'species' not found  # tried to replace "_" with " " in species names
-  select(-dateTime, -date, -Date, -year, -month, -day, -ship, -notes, -consecStationNum)
-View(SCZo.a1)
-head(SCZo.a1)
-
-
-# Convert variable names in 2010-2012 dataset to those used in 1998-2011 dataset
-# and extract samples from 2012
-SCZo.b1 = SCZo.b %>%
-  rename(cruiseID=Cruise) %>%
-  rename(time=Time) %>%
-  rename(stationID=Station) %>%
-  rename(towDepth=Tow.Depth..m.) %>%
-  rename(sonicDepth=Sonic.Depth..m.) %>%
-  rename(lat=Latitude..N.) %>%
-  rename(lon=Longitude..W.) %>%
-  rename(gear=Gear.Type) %>%
-  rename(ringDiam=Ring.Diameter..cm.) %>%
-  rename(meshSize=Mesh.Size.um) %>%
-  rename(towType=Tow.Type) %>%
-  rename(sampleVol=Sample.Volume..m3.) %>%
-  rename(sciName=Current.Name) %>%
-  rename(stage=Life.Stage) %>%
-  rename(abundance=Abundance..no.m.3.) %>%
-  rename(biomass=Biomass..g.m.3.) %>%
-  rename(kingdom=Kingdom) %>%
-  rename(phylum=Phylum) %>%
-  rename(subphylum=Subphylum) %>%
-  rename(class=Class) %>%
-  rename(subclass=Subclass) %>%
-  rename(infraclass=Infraclass) %>%
-  rename(order=Order) %>%
-  rename(suborder=Suborder) %>%
-  rename(infraorder=Infraorder) %>%
-  rename(family=Family) %>%
-  rename(genus=Genus) %>%
-  rename(species=Species.Name) %>%
-  filter(Year==2012)
-head(SCZo.b1)
-dim(SCZo.b1) # len should be 2620
-
-
-# Bind together 1998-2011 and 2012 datasets:
-SCZo1 = bind_rows(SCZo.a1, SCZo.b1)
-head(SCZo1)
-dim(SCZo.a1) # 34923    31
-dim(SCZo.b1) # 2620   31
-dim(SCZo1) # combined dataset should have dim 37543 31
-
-
-# --------------------------------------------------------------------------------------------------------------
-
-# B. Look at data for GAK sites on Seward Line
-
-# extract GAK sites for CalVET net:
+# extract GAK sites:
 SCZo1GAK = SCZo1 %>%
   filter(stationID %in% c("GAK1", "GAK2", "GAK3", "GAK4", "GAK5", "GAK6", "GAK7", "GAK8", "GAK9", "GAK10", "GAK11", "GAK12", "GAK13"))  # select only GAK sites
 head(SCZo1GAK)
 
+# -----------------------------------------------------------------------------------
 
-# Some sampling visualizations
-
+# Some sampling visualizations:
 # Site depths across Seward Line:
 SCZo1GAK$Site <- factor(SCZo1GAK$stationID, levels=c("GAK1", "GAK2", "GAK3", "GAK4", "GAK5", "GAK6", "GAK7", "GAK8", "GAK9", "GAK10", "GAK11", "GAK12", "GAK13"))
 ggplot(data=SCZo1GAK, aes(y=sonicDepth, x=Site)) +
@@ -124,9 +27,9 @@ ggplot(data=SCZo1GAK, aes(y=sonicDepth, x=Site)) +
 plot(SCZo1$Year ~ SCZo1$Month, pch=16)
 
 
-# --------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------
 
-# C. Create May small zooplankton biomass
+# Create May small zooplankton biomass
 
 # From Hopcroft 2014 (unpubl data; oral presentation at Ocean Sciences Symposium):
 # Large zooplankton: NMDS suggests that GAK 1-4 (sites in ACC) have different community structure than GAK 5-13 (shelf & offshore sites)
@@ -149,8 +52,11 @@ plot(SCZo1$Year ~ SCZo1$Month, pch=16)
 # NB I need to add nauplii to small zooplankton code below ***
 
 
-# Create dataframe with years:
-MaySmallZoop=data.frame('Year'=c(1998:2010))
+
+
+
+
+
 
 # 1. Copepod size / net classifications from Coyle & Pinchuk 2003:
 # Acartia, all life stages
@@ -163,8 +69,7 @@ SmAcartia = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmAcartia=mean(AcartiaSite)) %>% # take mean Acartia biomass across all GAK sites
   ungroup
-View(SmAcartia)
-MaySmallZoop <- merge(MaySmallZoop,SmAcartia,all.x=T)
+
 
 # Aetideidae, stages I-IV # NB there are none in GAK samples
 SmAetideidae = SCZo1GAK %>%
@@ -189,8 +94,7 @@ SmCmarshallae = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmCmarshallae=mean(CmarshallaeSite)) %>%
   ungroup
-#View(Cmarshallae)
-MaySmallZoop <- merge(MaySmallZoop,SmCmarshallae,all.x=T)
+
 
 # Calanus pacificus, stages I - IV
 SmCpacificus = SCZo1GAK %>%
@@ -203,7 +107,7 @@ SmCpacificus = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmCpacificus=mean(CpacificusSite)) %>% 
   ungroup
-MaySmallZoop <- merge(MaySmallZoop,SmCpacificus,all.x=T)
+
 
 # Candacia columbiae, stages I - III # none at GAK sites in May
 SmCcolumbiae = SCZo1GAK %>%
@@ -217,6 +121,7 @@ SmCcolumbiae = SCZo1GAK %>%
   summarise(SmCcolumbiae=mean(CcolumbiaeSite)) %>% 
   ungroup
 
+
 # Centropages abdominalis, all stages
 SmCabdominalis = SCZo1GAK %>%
   filter(species %in% c("Centropages_abdominalis", "abdominalis")) %>% 
@@ -227,7 +132,7 @@ SmCabdominalis = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmCabdominalis=mean(CabdominalisSite)) %>% 
   ungroup
-MaySmallZoop <- merge(MaySmallZoop,SmCabdominalis,all.x=T)
+
 
 # Clausocalanus spp., all stages
 SmClausocalanus = SCZo1GAK %>%
@@ -239,7 +144,7 @@ SmClausocalanus = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmClausocalanus=mean(ClausocalanusSite)) %>% 
   ungroup
-MaySmallZoop <- merge(MaySmallZoop,SmClausocalanus,all.x=T)
+
 
 # Epilabidocera amphitrites, stages I - III; NB none in May GAK samples - but add in Apr 30 sample from GAK2 in 2002 (cruiseID == hx258)
 SmEamphitrites = SCZo1GAK %>%
@@ -265,7 +170,7 @@ SmEbungii = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmEbungii=mean(EbungiiSite)) %>% 
   ungroup
-MaySmallZoop <- merge(MaySmallZoop,SmEbungii,all.x=T)
+
 
 # Euchaeta elongata, stages I - II # renamed to Paraeuchaeta elongata?
 SmPelongata = SCZo1GAK %>%
@@ -278,7 +183,7 @@ SmPelongata = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmPelongata=mean(PelongataSite)) %>% 
   ungroup
-MaySmallZoop <- merge(MaySmallZoop,SmPelongata,all.x=T)
+
 
 # Eurytemora, all life stages; NB doesn't appear at GAK sites
 SmEurytemora = SCZo1GAK %>%
@@ -328,7 +233,7 @@ SmMesocalanus = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmMesocalanus=mean(MesocalanusSite)) %>% 
   ungroup
-MaySmallZoop <- merge(MaySmallZoop,SmMesocalanus,all.x=T)
+
 
 # Metridia okhotensis, stages I - IV
 SmMokhotensis = SCZo1GAK %>%
@@ -341,7 +246,7 @@ SmMokhotensis = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmMokhotensis=mean(MokhotensisSite)) %>% 
   ungroup
-MaySmallZoop <- merge(MaySmallZoop,SmMokhotensis,all.x=T)
+
 
 # Metridia pacifica, stages I - V & Males
 SmMpacifica = SCZo1GAK %>%
@@ -354,7 +259,7 @@ SmMpacifica = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmMpacifica=mean(MpacificaSite)) %>% 
   ungroup
-MaySmallZoop <- merge(MaySmallZoop,SmMpacifica,all.x=T)
+
 
 # Microcalanus spp., all stages
 SmMicrocalanus = SCZo1GAK %>%
@@ -366,7 +271,7 @@ SmMicrocalanus = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmMicrocalanus=mean(MicrocalanusSite)) %>% 
   ungroup
-MaySmallZoop <- merge(MaySmallZoop,SmMicrocalanus,all.x=T)
+
 
 # Neocalanus cristatus, stages I - II
 SmNcristatus = SCZo1GAK %>%
@@ -379,7 +284,7 @@ SmNcristatus = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmNcristatus=mean(NcristatusSite)) %>% 
   ungroup
-MaySmallZoop <- merge(MaySmallZoop,SmNcristatus,all.x=T)
+
 
 # Neocalanus plumchrus-flemingeri, stages I - III # NB none in May GAK samples
 SmNpflemingeri = SCZo1GAK %>%
@@ -403,7 +308,7 @@ SmOithona = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmOithona=mean(OithonaSite)) %>% 
   ungroup
-MaySmallZoop <- merge(MaySmallZoop,SmOithona,all.x=T)
+
 
 # Oncaea spp., all stages
 SmOncaea = SCZo1GAK %>%
@@ -415,7 +320,7 @@ SmOncaea = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmOncaea=mean(OncaeaSite)) %>% 
   ungroup
-MaySmallZoop <- merge(MaySmallZoop,SmOncaea,all.x=T)
+
 
 # Paracalanus spp., all stages; NB none in May GAK samples
 SmParacalanus = SCZo1GAK %>%
@@ -440,7 +345,7 @@ SmPseudocalanus = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmPseudocalanus=mean(PseudocalanusSite)) %>% 
   ungroup
-MaySmallZoop <- merge(MaySmallZoop,SmPseudocalanus,all.x=T)
+
 
 # Racovitzanus antarcticus, all stages
 SmRantacrticus = SCZo1GAK %>%
@@ -452,7 +357,7 @@ SmRantacrticus = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmRantacrticus=mean(RantacrticusSite)) %>% 
   ungroup
-MaySmallZoop <- merge(MaySmallZoop,SmRantacrticus,all.x=T)
+
 
 # Scolecithricella spp., all stages
 SmScolecithricella = SCZo1GAK %>%
@@ -464,7 +369,7 @@ SmScolecithricella = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmScolecithricella=mean(ScolecithricellaSite)) %>% 
   ungroup
-MaySmallZoop <- merge(MaySmallZoop,SmScolecithricella,all.x=T)
+
 
 # Tortanus discaudata, all stages; NB none in May GAK samples (only appeared once in sampling record)
 SmTdiscaudata = SCZo1GAK %>%
@@ -491,7 +396,7 @@ SmMetridia = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmMetridia=mean(MetridiaSite)) %>% 
   ungroup
-MaySmallZoop <- merge(MaySmallZoop,SmMetridia,all.x=T)
+
 
 # Microsetella sp. only found in 2004.  Adult females are 0.02mg. Therefore take all stages from CalVET nets
 SmMicrosetella = SCZo1GAK %>%
@@ -503,7 +408,7 @@ SmMicrosetella = SCZo1GAK %>%
   group_by(Year) %>%
   summarise(SmMicrosetella=mean(MicrosetellaSite)) %>% 
   ungroup
-MaySmallZoop <- merge(MaySmallZoop,SmMicrosetella,all.x=T)
+
 
 # Monstrilla sp. (infraclass Neocopepod).  Not sure, and only approx 20 entries across entire dataset, therefore leave this for now
 #Parasitic on marine benthic inverts (polychaetes, gastropods); only the first nauplius & adult stages are free-swimming (adults don't feed)
@@ -539,19 +444,38 @@ SmPodonidae = SCZo1GAK %>%
   ungroup
 
 
-# --------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------
 
-# Total biomass of small zooplankton in May at GAK sites:
-View(MaySmallZoop)
-setwd("~/Google Drive/GoA project/Seward Line Zooplankton")
-write.csv(MaySmallZoop, "MaySmallZoop.csv", row.names = FALSE)
+# Create dataframe with years:
+MaySmallZoop=data.frame('Year'=c(1998:2010))
 
-MaySmallZoop$tot <- rowSums(MaySmallZoop[,2:20], na.rm=T)
-# check sum of first row; should be  0.07037575   0.070375753
-0.0005089881 + 0.0013066137 + 0.002122075 + 0.000822537 + 0.0006138843 + 0.0004410340 +0.0009865588 + 0.0020116515 + 0.0091233778 +0.0002815145 + 0.04214510 + 0.0011274123 + 0.0088338052 + 0.0000512000
-View(MaySmallZoop)
-
-ggplot(data=MaySmallZoop, aes(y=tot, x=Year)) +
-  geom_point(size=4) + geom_line() + theme_bw() + scale_y_log10() + ylab("May Small Zooplankton Total Biomass (g WW / m3)") + xlab("Year")
-
-# trend does not reflect abundance trends posted on Seward Line website.  Make sure data are not missing post-2004-ish
+# Merge in the taxon-specific biomass data
+MaySmallZoop <- merge(MaySmallZoop,SmAcartia,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmAetideidae,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmCmarshallae,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmCpacificus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmCcolumbiae,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmCabdominalis,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmClausocalanus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmEamphitrites,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmEbungii,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmPelongata,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmEurytemora,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmHeterorhabdus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmLucicutia,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMesocalanus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMokhotensis,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMpacifica,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMicrocalanus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmNcristatus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmNpflemingeri,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmOithona,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmOncaea,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmParacalanus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmPseudocalanus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmRantacrticus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmScolecithricella,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMetridia,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMicrosetella,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmNeocalanus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmPodonidae,all.x=T)
