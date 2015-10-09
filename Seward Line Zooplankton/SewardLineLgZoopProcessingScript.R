@@ -475,6 +475,492 @@ MayLgZoBiomass <- merge(MayLgZoBiomass,Gastropoda,all.x=T)
 # ---------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------
 
+# Extract May samples:
+Fall = GAK %>%
+  filter(Month >= 9) # select Sept & Oct samples
+unique(sort(Fall$Month))
+
+# 1. Copepod size / net classifications from Coyle & Pinchuk 2003:
+
+# Aetideidae, stages V, Adults
+Aetideidae = Fall %>%
+  filter(family == "Aetideidae") %>%
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(AetideidaeSite=sum(biomass)) %>%
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Aetideidae=mean(AetideidaeSite)) %>% 
+  ungroup
+#View(Aetideidae)
+
+
+# Calanus marshallae, stages IV, V, adults
+Cmarshallae = Fall %>%
+  filter(sciName == "Calanus marshallae") %>% 
+  filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(CmarshallaeSite=sum(biomass)) %>%
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Cmarshallae=mean(CmarshallaeSite)) %>%
+  ungroup
+#View(Cmarshallae)
+
+
+# Calanus pacificus, stages V, adults
+Cpacificus = Fall %>%
+  filter(sciName == "Calanus pacificus") %>%
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(CpacificusSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Cpacificus=mean(CpacificusSite)) %>% 
+  ungroup
+#View(Cpacificus)
+
+
+# Candacia, stages IV, V, adults
+Candacia = Fall %>%
+  filter(genus == "Candacia") %>% 
+  filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(CandaciaSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Candacia=mean(CandaciaSite)) %>% 
+  ungroup
+#View(Candacia) # none at GAK sites in May
+
+
+# Epilabidocera amphitrites, stages IV, V, adults;  add in Apr 30 sample from GAK2 in 2002 (cruiseID == hx258)
+Eamphitrites = Fall %>%
+  filter(species == "Epilabidocera amphitrites") %>% 
+  filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(EamphitritesSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Eamphitrites=mean(EamphitritesSite)) %>% 
+  ungroup
+#View(Eamphitrites) # none in May GAK samples
+
+
+# Eucalanus bungii, stages IV, V, adults
+Ebungii = Fall %>%
+  filter(sciName == "Eucalanus bungii") %>% 
+  filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(EbungiiSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Ebungii=mean(EbungiiSite)) %>% 
+  ungroup
+#View(Ebungii)
+
+
+# Euchaeta elongata, stages III-V, adults
+Pelongata = Fall %>%
+  filter(species %in% c("Paraeuchaeta elongata", "Elongata")) %>% 
+  filter(stage %in% c("III", "IV", "V", "C3", "C4", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(PelongataSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Pelongata=mean(PelongataSite)) %>% 
+  ungroup
+#View(Pelongata)
+
+
+# Heterorhabdus spp., stages IV, V, adults
+Heterorhabdus = Fall %>%
+  filter(genus == "Heterorhabdus") %>% 
+  filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(HeterorhabdusSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Heterorhabdus=mean(HeterorhabdusSite)) %>% 
+  ungroup
+#View(Heterorhabdus)
+
+
+# Heterostylites spp., stages V, adults; none in May GAK samples
+Heterostylites = Fall %>%
+  filter(genus == "Heterostylites") %>% 
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(HeterostylitesSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Heterostylites=mean(HeterostylitesSite)) %>% 
+  ungroup
+#View(Heterostylites)
+
+
+# Lucicutia spp., stages V, adults
+Lucicutia = Fall %>%
+  filter(genus == "Lucicutia") %>% 
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(LucicutiaSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Lucicutia=mean(LucicutiaSite)) %>% 
+  ungroup
+#View(Lucicutia)
+
+
+# Metridia okhotensis, stages V, adults
+Mokhotensis = Fall %>%
+  filter(sciName == "Metridia okhotensis") %>% 
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(MokhotensisSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Mokhotensis=mean(MokhotensisSite)) %>% 
+  ungroup
+#View(Mokhotensis)
+
+
+# Metridia pacifica, stages Females
+Mpacifica = Fall %>%
+  filter(sciName == "Metridia pacifica") %>% 
+  filter(stage == "AF") %>%
+  group_by(Year, stationID) %>%
+  summarise(MpacificaSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Mpacifica=mean(MpacificaSite)) %>% 
+  ungroup
+#View(Mpacifica)
+
+
+# Neocalanus cristatus, stages III-V, adults
+Ncristatus = Fall %>%
+  filter(sciName == "Neocalanus cristatus") %>% 
+  filter(stage %in% c("III", "IV", "V", "C3", "C4", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(NcristatusSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Ncristatus=mean(NcristatusSite)) %>% 
+  ungroup
+#View(Ncristatus)
+
+
+# Neocalanus plumchrus-flemingeri, stages IV, V, adults
+Npflemingeri = Fall %>%
+  filter(sciName %in% c("Neocalanus plumchrus", "Neocalanus flemingeri")) %>% 
+  filter(stage %in% c("IV", "V", "C4", "C5", "CV_large", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(NpflemingeriSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Npflemingeri=mean(NpflemingeriSite)) %>% 
+  ungroup
+#View(Npflemingeri)
+
+
+# Pleuromamma spp., stages V, adults 
+Pleuromamma = Fall %>%
+  filter(genus == "Pleuromamma") %>% 
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(PleuromammaSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Pleuromamma=mean(PleuromammaSite)) %>% 
+  ungroup
+#View(Pleuromamma)
+
+
+# -----------------------
+
+# 2. Other copepod taxa present but not assigned to size / net group by Coyle & Pinchuk 2003:
+
+# Gaussia princeps   Follow Coyle & Pinchuk's classification for congenors Pleuromamma & Metridia
+# None in GAK May samples
+Gprinceps = Fall %>%
+  filter(sciName == "Gaussia princeps") %>%
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(GprincepsSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Gprinceps=mean(GprincepsSite)) %>% 
+  ungroup
+#View(Gprinceps)
+
+
+# Metridia sp. Follow Coyle & Pinchuk's 2003 classification for M. okhotensis
+# ie take stages V, adults from large nets
+Metridia = Fall %>%
+  filter(sciName == "Metridia") %>%
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(MetridiaSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Metridia=mean(MetridiaSite)) %>% 
+  ungroup
+#View(Metridia)
+
+
+# Monstrilla sp. (infraclass Neocopepod).  Not captured in large zoop nets
+
+
+# Neocalanus sp.  Follow Coyle & Pinchuk's 2003 classification for N. cristatus
+# ie take III-V, adults from large nets
+Neocalanus = Fall %>%
+  filter(sciName == "Neocalanus") %>% 
+  filter(stage %in% c("III", "IV", "V", "C3", "C4", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(NeocalanusSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Neocalanus=mean(NeocalanusSite)) %>% 
+  ungroup
+#View(Neocalanus)
+
+
+# -----------------------
+
+# 3. Other non-copepod crustacean zooplankton
+
+# Euphausiids all stages?
+Euphausiids = Fall %>%
+  filter(order == "Euphausiacea") %>% 
+  group_by(Year, stationID) %>%
+  summarise(EuphausiidsSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Euphausiids=mean(EuphausiidsSite)) %>% 
+  ungroup
+View(Euphausiids)
+
+ggplot(data=Euphausiids, aes(y=Euphausiids, x=Year)) +
+  geom_point(size=4) + geom_line() + theme_bw() + scale_y_log10() + 
+  ylab("Mean May Euphausiid Biomass across GAK sites (g WW / m3)") +
+  xlab("Year")
+
+# Mysids (all stages?)
+Mysids = Fall %>%
+  filter(order == "Mysida") %>% 
+  group_by(Year, stationID) %>%
+  summarise(MysidsSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Mysids=mean(MysidsSite)) %>% 
+  ungroup
+#View(Mysids)
+
+
+# Cnidaria
+Cnidaria = Fall %>%
+  filter(phylum == "Cnidaria") %>% 
+  group_by(Year, stationID) %>%
+  summarise(CnidariaSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Mysids=mean(CnidariaSite)) %>% 
+  ungroup
+#View(Cnidaria)
+
+
+#Salps; none in May GAK samples
+Salps = Fall %>%
+  filter(family == "Salpidae") %>% 
+  group_by(Year, stationID) %>%
+  summarise(SalpsSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Salps=mean(SalpsSite)) %>% 
+  ungroup
+#View(Salps)
+
+
+# Chaetnognaths; none in May GAK samples
+Chaetnognatha = Fall %>%
+  filter(phylum == "Chaetnognatha") %>% 
+  group_by(Year, stationID) %>%
+  summarise(ChaetnognathaSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Chaetnognatha=mean(ChaetnognathaSite)) %>% 
+  ungroup
+#View(Chaetnognatha)
+
+
+#Crab & shrimp zoea
+Zoea = Fall %>%
+  filter(stage %in% c("zoea", "zoea_stage_1")) %>% 
+  group_by(Year, stationID) %>%
+  summarise(ZoeaSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Zoea=mean(ZoeaSite)) %>% 
+  ungroup
+#View(Zoea)
+
+
+# Gastropods
+Gastropoda = Fall %>%
+  filter(class == "Gastropoda") %>% 
+  group_by(Year, stationID) %>%
+  summarise(GastropodaSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(Gastropoda=mean(GastropodaSite)) %>% 
+  ungroup
+#View(Gastropoda)
+
+
+# -----------------------
+
+# Create dataframe with years:
+FallLgZoBiomass=data.frame('Year'=c(1998:2010))
+
+# Merge in the taxon-specific biomass data
+FallLgZoBiomass <- merge(FallLgZoBiomass,Aetideidae,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Cmarshallae,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Cpacificus,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Candacia,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Eamphitrites,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Ebungii,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Pelongata,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Heterorhabdus,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Heterostylites,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Lucicutia,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Mokhotensis,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Mpacifica,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Ncristatus,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Npflemingeri,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Pleuromamma,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Gprinceps,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Metridia,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Neocalanus,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Euphausiids,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Mysids,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Cnidaria,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Salps,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Chaetnognatha,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Zoea,all.x=T)
+FallLgZoBiomass <- merge(FallLgZoBiomass,Gastropoda,all.x=T)
+
+View(FallLgZoBiomass)
+
+FallLgZoBiomass = FallLgZoBiomass %>%
+  mutate(Month = as.numeric(c(10, 10, 10, 10, 10, 10, 10, 9, 9, 9, 9, 9, 9)))
+  
+FallLgCopepods <- FallLgZoBiomass %>%
+  select(-Mysids, -Euphausiids, -Salps, -Chaetnognatha, -Zoea, -Gastropoda)
+View(FallLgCopepods)
+unique(sort(FallLgCopepods$Year))
+# sum Fall total large copepod biomass
+FallTotLgCopepodBiomass = FallLgCopepods %>%
+  mutate(FallTotLgCopepodBiomass = rowSums(FallLgCopepods[,2:19], na.rm=T)) %>%
+  select(Year, Month, FallTotLgCopepodBiomass)
+View(FallTotLgCopepodBiomass)
+
+# Plot Large Copepod Biomass:
+ggplot(data=FallTotLgCopepodBiomass, aes(y=FallTotLgCopepodBiomass, x=Year, colour=as.factor(Month))) +
+  geom_point(size=4) + geom_line() + theme_bw() + 
+  scale_y_log10() + coord_cartesian(xlim = c(1996, 2012)) + coord_cartesian(ylim = c(0.04, 0.2)) +
+  ylab("Mean Fall Total Large Copepod Biomass across GAK sites (g WW / m3)") +
+  xlab("Year")
+
+# Plot Euphausiid Biomass:
+ggplot(data=FallLgZoBiomass, aes(y=Euphausiids, x=Year, colour=as.factor(Month))) +
+  geom_point(size=4) + geom_line() + theme_bw() + 
+  scale_y_log10() + coord_cartesian(xlim = c(1996, 2012)) + coord_cartesian(ylim = c(0.01, 0.7)) +
+  ylab("Mean Fall Euphausiid Biomass across GAK sites (g WW / m3)") +
+  xlab("Year")
+
+
+
+AugLg <- FallLgZoBiomass
+SeptLg <- FallLgZoBiomass
+OctLg <- FallLgZoBiomass
+
+rm(FallLgZoBiomass)
+
+# Aug LgCopepods
+AugLgCopepods <- AugLg %>%
+  select(-Mysids, -Euphausiids, -Salps, -Chaetnognatha, -Zoea, -Gastropoda)
+View(AugLgCopepods)
+# sum Aug total lg copepod biomass
+AugTotLgCopepodBiomass = AugLgCopepods %>%
+  mutate(AugTotLgCopepodBiomass = rowSums(AugLgCopepods[,2:19], na.rm=T)) %>%
+  select(Year, AugTotLgCopepodBiomass)
+View(AugTotLgCopepodBiomass)
+
+# Sept LgCopepods
+SeptLgCopepods <- SeptLg %>%
+  select(-Mysids, -Euphausiids, -Salps, -Chaetnognatha, -Zoea, -Gastropoda)
+View(SeptLgCopepods)
+# sum Aug total lg copepod biomass
+SeptTotLgCopepodBiomass = SeptLgCopepods %>%
+  mutate(SeptTotLgCopepodBiomass = rowSums(SeptLgCopepods[,2:19], na.rm=T)) %>%
+  select(Year, SeptTotLgCopepodBiomass)
+View(SeptTotLgCopepodBiomass)
+
+# Oct LgCopepods
+OctLgCopepods <- OctLg %>%
+  select(-Mysids, -Euphausiids, -Salps, -Chaetnognatha, -Zoea, -Gastropoda)
+View(OctLgCopepods)
+# sum Aug total lg copepod biomass
+OctTotLgCopepodBiomass = OctLgCopepods %>%
+  mutate(OctTotLgCopepodBiomass = rowSums(OctLgCopepods[,2:19], na.rm=T)) %>%
+  select(Year, OctTotLgCopepodBiomass)
+View(OctTotLgCopepodBiomass)
+
+ggplot(AugTotLgCopepodBiomass, aes(y=AugTotLgCopepodBiomass, x=Year)) +
+  geom_point(size=4) + geom_line() + theme_bw() + 
+  scale_y_log10() + coord_cartesian(xlim = c(1996, 2012), ylim = c(0.01, 0.4)) +
+  ylab("Mean Aug Total Lg Copepod Biomass across GAK sites (g WW / m3)") +
+  xlab("Year")
+
+ggplot(SeptTotLgCopepodBiomass, aes(y=SeptTotLgCopepodBiomass, x=Year)) +
+  geom_point(size=4) + geom_line() + theme_bw() + 
+  scale_y_log10() + coord_cartesian(xlim = c(1996, 2012), ylim = c(0.01, 0.4)) +
+  ylab("Mean Sept Total Lg Copepod Biomass across GAK sites (g WW / m3)") +
+  xlab("Year")
+
+ggplot(OctTotLgCopepodBiomass, aes(y=OctTotLgCopepodBiomass, x=Year)) +
+  geom_point(size=4) + geom_line() + theme_bw() + 
+  scale_y_log10() + coord_cartesian(xlim = c(1996, 2012), ylim = c(0.01, 0.4)) +
+  ylab("Mean Oct Total Lg Copepod Biomass across GAK sites (g WW / m3)") +
+  xlab("Year")
+
+
+# Euphausiids; look similar across months:
+ggplot(AugLg, aes(y=Euphausiids, x=Year)) +
+  geom_point(size=4) + geom_line() + theme_bw() + 
+  scale_y_log10() + coord_cartesian(xlim = c(1996, 2012), ylim = c(0.01, 0.7)) +
+  ylab("Mean Aug Euphausiid Biomass across GAK sites (g WW / m3)") +
+  xlab("Year")
+
+ggplot(SeptLg, aes(y=Euphausiids, x=Year)) +
+  geom_point(size=4) + geom_line() + theme_bw() + 
+  scale_y_log10() + coord_cartesian(xlim = c(1996, 2012), ylim = c(0.01, 0.7)) +
+  ylab("Mean Sept Euphausiid Biomass across GAK sites (g WW / m3)") +
+  xlab("Year")
+
+ggplot(OctLg, aes(y=Euphausiids, x=Year)) +
+  geom_point(size=4) + geom_line() + theme_bw() + 
+  scale_y_log10() + coord_cartesian(xlim = c(1996, 2012), ylim = c(0.01, 0.7)) +
+  ylab("Mean Oct Euphausiid Biomass across GAK sites (g WW / m3)") +
+  xlab("Year")
+
+
+
+# ---------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------
+
 # Create May large zooplankton abundance
 
 # 1. Copepod size / net classifications from Coyle & Pinchuk 2003:
