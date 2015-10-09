@@ -858,7 +858,7 @@ FallSmallZoop <- merge(FallSmallZoop,SmPodonidae,all.x=T)
 
 View(FallSmallZoop)
 
-FallLgZoBiomass = FallLgZoBiomass %>%
+FallLSmallZoop = FallSmallZoop %>%
   mutate(Month = as.numeric(c(10, 10, 10, 10, 10, 10, 10, 9, 9, 9, 9, 9, 9)))
 
 FallSmCopepods <- FallSmallZoop %>%
@@ -870,7 +870,6 @@ FallTotSmCopepodBiomass = FallSmCopepods %>%
   select(Year, Month, FallTotSmCopepodBiomass)
 View(FallTotSmCopepodBiomass)
 
-# month = Oct for 1997-2004, Sept for 2005-2010
 ggplot(data=FallTotSmCopepodBiomass, aes(y=FallTotSmCopepodBiomass, x=Year, colour=as.factor(Month))) +
   geom_point(size=4) + geom_line() + theme_bw() + 
   scale_y_log10() + coord_cartesian(xlim = c(1996, 2012)) + coord_cartesian(ylim = c(0.01, 0.1)) +
