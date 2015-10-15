@@ -5,9 +5,13 @@
 #######################################################################
 
 ## load packages
+library(plyr)
 library(dplyr)
+library(tidyr)
+library(stringr)
 library(httr)
 library(ggplot2)
+library(taxize)
 
 # A. Load datasets
 

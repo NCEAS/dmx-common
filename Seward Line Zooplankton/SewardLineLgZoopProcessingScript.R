@@ -475,10 +475,9 @@ MayLgZoBiomass <- merge(MayLgZoBiomass,Gastropoda,all.x=T)
 # ---------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------
 
-# Extract May samples:
+# Extract Fall samples:
 Fall = GAK %>%
-  filter(Month >= 9) # select Sept & Oct samples
-unique(sort(Fall$Month))
+  filter(Month == 8)
 
 # 1. Copepod size / net classifications from Coyle & Pinchuk 2003:
 
@@ -561,7 +560,12 @@ Ebungii = Fall %>%
 
 
 # Euchaeta elongata, stages III-V, adults
-Pelongata = Fall %>%
+# renamed to Paraeuchaeta elongata?
+# Use ITIS to query this:
+elongata = c("Euchaeta elongata", "Paraeuchaeta elongata")
+tsn = get_tsn(elongata)
+View(tsn) # Yes, E. elongata was renamed to P. elongata
+Pelongata = May %>%
   filter(species %in% c("Paraeuchaeta elongata", "Elongata")) %>% 
   filter(stage %in% c("III", "IV", "V", "C3", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
@@ -574,7 +578,7 @@ Pelongata = Fall %>%
 
 
 # Heterorhabdus spp., stages IV, V, adults
-Heterorhabdus = Fall %>%
+Heterorhabdus = May %>%
   filter(genus == "Heterorhabdus") %>% 
   filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
@@ -587,7 +591,7 @@ Heterorhabdus = Fall %>%
 
 
 # Heterostylites spp., stages V, adults; none in May GAK samples
-Heterostylites = Fall %>%
+Heterostylites = May %>%
   filter(genus == "Heterostylites") %>% 
   filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
@@ -600,7 +604,7 @@ Heterostylites = Fall %>%
 
 
 # Lucicutia spp., stages V, adults
-Lucicutia = Fall %>%
+Lucicutia = May %>%
   filter(genus == "Lucicutia") %>% 
   filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
@@ -613,7 +617,7 @@ Lucicutia = Fall %>%
 
 
 # Metridia okhotensis, stages V, adults
-Mokhotensis = Fall %>%
+Mokhotensis = May %>%
   filter(sciName == "Metridia okhotensis") %>% 
   filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
@@ -626,7 +630,7 @@ Mokhotensis = Fall %>%
 
 
 # Metridia pacifica, stages Females
-Mpacifica = Fall %>%
+Mpacifica = May %>%
   filter(sciName == "Metridia pacifica") %>% 
   filter(stage == "AF") %>%
   group_by(Year, stationID) %>%
@@ -639,7 +643,7 @@ Mpacifica = Fall %>%
 
 
 # Neocalanus cristatus, stages III-V, adults
-Ncristatus = Fall %>%
+Ncristatus = May %>%
   filter(sciName == "Neocalanus cristatus") %>% 
   filter(stage %in% c("III", "IV", "V", "C3", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
@@ -652,7 +656,7 @@ Ncristatus = Fall %>%
 
 
 # Neocalanus plumchrus-flemingeri, stages IV, V, adults
-Npflemingeri = Fall %>%
+Npflemingeri = May %>%
   filter(sciName %in% c("Neocalanus plumchrus", "Neocalanus flemingeri")) %>% 
   filter(stage %in% c("IV", "V", "C4", "C5", "CV_large", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
@@ -665,7 +669,7 @@ Npflemingeri = Fall %>%
 
 
 # Pleuromamma spp., stages V, adults 
-Pleuromamma = Fall %>%
+Pleuromamma = May %>%
   filter(genus == "Pleuromamma") %>% 
   filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
@@ -683,7 +687,7 @@ Pleuromamma = Fall %>%
 
 # Gaussia princeps   Follow Coyle & Pinchuk's classification for congenors Pleuromamma & Metridia
 # None in GAK May samples
-Gprinceps = Fall %>%
+Gprinceps = May %>%
   filter(sciName == "Gaussia princeps") %>%
   filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
@@ -697,7 +701,7 @@ Gprinceps = Fall %>%
 
 # Metridia sp. Follow Coyle & Pinchuk's 2003 classification for M. okhotensis
 # ie take stages V, adults from large nets
-Metridia = Fall %>%
+Metridia = May %>%
   filter(sciName == "Metridia") %>%
   filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
@@ -714,7 +718,7 @@ Metridia = Fall %>%
 
 # Neocalanus sp.  Follow Coyle & Pinchuk's 2003 classification for N. cristatus
 # ie take III-V, adults from large nets
-Neocalanus = Fall %>%
+Neocalanus = May %>%
   filter(sciName == "Neocalanus") %>% 
   filter(stage %in% c("III", "IV", "V", "C3", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
@@ -731,7 +735,7 @@ Neocalanus = Fall %>%
 # 3. Other non-copepod crustacean zooplankton
 
 # Euphausiids all stages?
-Euphausiids = Fall %>%
+Euphausiids = May %>%
   filter(order == "Euphausiacea") %>% 
   group_by(Year, stationID) %>%
   summarise(EuphausiidsSite=sum(biomass)) %>% 
@@ -747,7 +751,7 @@ ggplot(data=Euphausiids, aes(y=Euphausiids, x=Year)) +
   xlab("Year")
 
 # Mysids (all stages?)
-Mysids = Fall %>%
+Mysids = May %>%
   filter(order == "Mysida") %>% 
   group_by(Year, stationID) %>%
   summarise(MysidsSite=sum(biomass)) %>% 
@@ -759,7 +763,7 @@ Mysids = Fall %>%
 
 
 # Cnidaria
-Cnidaria = Fall %>%
+Cnidaria = May %>%
   filter(phylum == "Cnidaria") %>% 
   group_by(Year, stationID) %>%
   summarise(CnidariaSite=sum(biomass)) %>% 
@@ -771,7 +775,7 @@ Cnidaria = Fall %>%
 
 
 #Salps; none in May GAK samples
-Salps = Fall %>%
+Salps = May %>%
   filter(family == "Salpidae") %>% 
   group_by(Year, stationID) %>%
   summarise(SalpsSite=sum(biomass)) %>% 
@@ -783,7 +787,7 @@ Salps = Fall %>%
 
 
 # Chaetnognaths; none in May GAK samples
-Chaetnognatha = Fall %>%
+Chaetnognatha = May %>%
   filter(phylum == "Chaetnognatha") %>% 
   group_by(Year, stationID) %>%
   summarise(ChaetnognathaSite=sum(biomass)) %>% 
@@ -795,7 +799,7 @@ Chaetnognatha = Fall %>%
 
 
 #Crab & shrimp zoea
-Zoea = Fall %>%
+Zoea = May %>%
   filter(stage %in% c("zoea", "zoea_stage_1")) %>% 
   group_by(Year, stationID) %>%
   summarise(ZoeaSite=sum(biomass)) %>% 
@@ -807,7 +811,7 @@ Zoea = Fall %>%
 
 
 # Gastropods
-Gastropoda = Fall %>%
+Gastropoda = May %>%
   filter(class == "Gastropoda") %>% 
   group_by(Year, stationID) %>%
   summarise(GastropodaSite=sum(biomass)) %>% 
@@ -821,140 +825,36 @@ Gastropoda = Fall %>%
 # -----------------------
 
 # Create dataframe with years:
-FallLgZoBiomass=data.frame('Year'=c(1998:2010))
+MayLgZoBiomass=data.frame('Year'=c(1998:2010))
 
 # Merge in the taxon-specific biomass data
-FallLgZoBiomass <- merge(FallLgZoBiomass,Aetideidae,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Cmarshallae,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Cpacificus,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Candacia,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Eamphitrites,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Ebungii,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Pelongata,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Heterorhabdus,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Heterostylites,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Lucicutia,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Mokhotensis,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Mpacifica,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Ncristatus,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Npflemingeri,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Pleuromamma,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Gprinceps,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Metridia,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Neocalanus,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Euphausiids,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Mysids,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Cnidaria,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Salps,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Chaetnognatha,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Zoea,all.x=T)
-FallLgZoBiomass <- merge(FallLgZoBiomass,Gastropoda,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Aetideidae,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Cmarshallae,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Cpacificus,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Candacia,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Eamphitrites,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Ebungii,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Pelongata,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Heterorhabdus,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Heterostylites,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Lucicutia,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Mokhotensis,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Mpacifica,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Ncristatus,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Npflemingeri,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Pleuromamma,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Gprinceps,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Metridia,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Neocalanus,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Euphausiids,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Mysids,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Cnidaria,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Salps,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Chaetnognatha,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Zoea,all.x=T)
+MayLgZoBiomass <- merge(MayLgZoBiomass,Gastropoda,all.x=T)
 
-View(FallLgZoBiomass)
-
-FallLgZoBiomass = FallLgZoBiomass %>%
-  mutate(Month = as.numeric(c(10, 10, 10, 10, 10, 10, 10, 9, 9, 9, 9, 9, 9)))
-  
-FallLgCopepods <- FallLgZoBiomass %>%
-  select(-Mysids, -Euphausiids, -Salps, -Chaetnognatha, -Zoea, -Gastropoda)
-View(FallLgCopepods)
-unique(sort(FallLgCopepods$Year))
-# sum Fall total large copepod biomass
-FallTotLgCopepodBiomass = FallLgCopepods %>%
-  mutate(FallTotLgCopepodBiomass = rowSums(FallLgCopepods[,2:19], na.rm=T)) %>%
-  select(Year, Month, FallTotLgCopepodBiomass)
-View(FallTotLgCopepodBiomass)
-
-# Plot Large Copepod Biomass:
-ggplot(data=FallTotLgCopepodBiomass, aes(y=FallTotLgCopepodBiomass, x=Year, colour=as.factor(Month))) +
-  geom_point(size=4) + geom_line() + theme_bw() + 
-  scale_y_log10() + coord_cartesian(xlim = c(1996, 2012)) + coord_cartesian(ylim = c(0.04, 0.2)) +
-  ylab("Mean Fall Total Large Copepod Biomass across GAK sites (g WW / m3)") +
-  xlab("Year")
-
-# Plot Euphausiid Biomass:
-ggplot(data=FallLgZoBiomass, aes(y=Euphausiids, x=Year, colour=as.factor(Month))) +
-  geom_point(size=4) + geom_line() + theme_bw() + 
-  scale_y_log10() + coord_cartesian(xlim = c(1996, 2012)) + coord_cartesian(ylim = c(0.01, 0.7)) +
-  ylab("Mean Fall Euphausiid Biomass across GAK sites (g WW / m3)") +
-  xlab("Year")
-
-
-
-AugLg <- FallLgZoBiomass
-SeptLg <- FallLgZoBiomass
-OctLg <- FallLgZoBiomass
-
-rm(FallLgZoBiomass)
-
-# Aug LgCopepods
-AugLgCopepods <- AugLg %>%
-  select(-Mysids, -Euphausiids, -Salps, -Chaetnognatha, -Zoea, -Gastropoda)
-View(AugLgCopepods)
-# sum Aug total lg copepod biomass
-AugTotLgCopepodBiomass = AugLgCopepods %>%
-  mutate(AugTotLgCopepodBiomass = rowSums(AugLgCopepods[,2:19], na.rm=T)) %>%
-  select(Year, AugTotLgCopepodBiomass)
-View(AugTotLgCopepodBiomass)
-
-# Sept LgCopepods
-SeptLgCopepods <- SeptLg %>%
-  select(-Mysids, -Euphausiids, -Salps, -Chaetnognatha, -Zoea, -Gastropoda)
-View(SeptLgCopepods)
-# sum Aug total lg copepod biomass
-SeptTotLgCopepodBiomass = SeptLgCopepods %>%
-  mutate(SeptTotLgCopepodBiomass = rowSums(SeptLgCopepods[,2:19], na.rm=T)) %>%
-  select(Year, SeptTotLgCopepodBiomass)
-View(SeptTotLgCopepodBiomass)
-
-# Oct LgCopepods
-OctLgCopepods <- OctLg %>%
-  select(-Mysids, -Euphausiids, -Salps, -Chaetnognatha, -Zoea, -Gastropoda)
-View(OctLgCopepods)
-# sum Aug total lg copepod biomass
-OctTotLgCopepodBiomass = OctLgCopepods %>%
-  mutate(OctTotLgCopepodBiomass = rowSums(OctLgCopepods[,2:19], na.rm=T)) %>%
-  select(Year, OctTotLgCopepodBiomass)
-View(OctTotLgCopepodBiomass)
-
-ggplot(AugTotLgCopepodBiomass, aes(y=AugTotLgCopepodBiomass, x=Year)) +
-  geom_point(size=4) + geom_line() + theme_bw() + 
-  scale_y_log10() + coord_cartesian(xlim = c(1996, 2012), ylim = c(0.01, 0.4)) +
-  ylab("Mean Aug Total Lg Copepod Biomass across GAK sites (g WW / m3)") +
-  xlab("Year")
-
-ggplot(SeptTotLgCopepodBiomass, aes(y=SeptTotLgCopepodBiomass, x=Year)) +
-  geom_point(size=4) + geom_line() + theme_bw() + 
-  scale_y_log10() + coord_cartesian(xlim = c(1996, 2012), ylim = c(0.01, 0.4)) +
-  ylab("Mean Sept Total Lg Copepod Biomass across GAK sites (g WW / m3)") +
-  xlab("Year")
-
-ggplot(OctTotLgCopepodBiomass, aes(y=OctTotLgCopepodBiomass, x=Year)) +
-  geom_point(size=4) + geom_line() + theme_bw() + 
-  scale_y_log10() + coord_cartesian(xlim = c(1996, 2012), ylim = c(0.01, 0.4)) +
-  ylab("Mean Oct Total Lg Copepod Biomass across GAK sites (g WW / m3)") +
-  xlab("Year")
-
-
-# Euphausiids; look similar across months:
-ggplot(AugLg, aes(y=Euphausiids, x=Year)) +
-  geom_point(size=4) + geom_line() + theme_bw() + 
-  scale_y_log10() + coord_cartesian(xlim = c(1996, 2012), ylim = c(0.01, 0.7)) +
-  ylab("Mean Aug Euphausiid Biomass across GAK sites (g WW / m3)") +
-  xlab("Year")
-
-ggplot(SeptLg, aes(y=Euphausiids, x=Year)) +
-  geom_point(size=4) + geom_line() + theme_bw() + 
-  scale_y_log10() + coord_cartesian(xlim = c(1996, 2012), ylim = c(0.01, 0.7)) +
-  ylab("Mean Sept Euphausiid Biomass across GAK sites (g WW / m3)") +
-  xlab("Year")
-
-ggplot(OctLg, aes(y=Euphausiids, x=Year)) +
-  geom_point(size=4) + geom_line() + theme_bw() + 
-  scale_y_log10() + coord_cartesian(xlim = c(1996, 2012), ylim = c(0.01, 0.7)) +
-  ylab("Mean Oct Euphausiid Biomass across GAK sites (g WW / m3)") +
-  xlab("Year")
-
+#View(MayLgZoBiomass)
 
 
 # ---------------------------------------------------------------------------------------------------

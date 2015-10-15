@@ -461,7 +461,7 @@ View(MaySmallZoop)
 
 SCFall = SCZo1GAK %>%
   filter(Month >= 9) # select Sept & Oct samples
-unique(sort(SCFall$Month))
+SCFall$Month
 
 
 # 1. Copepod size / net classifications from Coyle & Pinchuk 2003:
@@ -697,7 +697,7 @@ SmOithona = SCFall %>%
 
 
 # Oncaea spp., all stages
-SmOncaea = SCFall %>%
+SmOncaea = SCMay %>%
   filter(species == "Oncaea_sp." | sciName == "Oncaea_sp.") %>% 
   group_by(Year, stationID) %>%
   summarise(OncaeaSite=sum(biomass)) %>% 
@@ -708,7 +708,7 @@ SmOncaea = SCFall %>%
 
 
 # Paracalanus spp., all stages; NB none in May GAK samples
-SmParacalanus = SCFall %>%
+SmParacalanus = SCMay %>%
   filter(species %in% c("Paracalanus_parvus", "Paracalanus_sp.", "parvus") | sciName == "Paracalanus_sp.") %>% 
   group_by(Year, stationID) %>%
   summarise(ParacalanusSite=sum(biomass)) %>% 
@@ -720,7 +720,7 @@ SmParacalanus = SCFall %>%
 # Pleuromamma spp., stgbes I-IV (family Metridinidae, genus Pleuromamma)  NB None in this dataset ... ?
 
 # Pseudocalanus spp., all stages
-SmPseudocalanus = SCFall %>%
+SmPseudocalanus = SCMay %>%
   filter(species == "Pseudocalanus_sp." | sciName == "Pseudocalanus_sp.") %>% 
   group_by(Year, stationID) %>%
   summarise(PseudocalanusSite=sum(biomass)) %>% 
@@ -731,7 +731,7 @@ SmPseudocalanus = SCFall %>%
 
 
 # Racovitzanus antarcticus, all stages
-SmRantacrticus = SCFall %>%
+SmRantacrticus = SCMay %>%
   filter(species %in% c("Racovitzanus_antarcticus", "antarcticus")) %>% 
   group_by(Year, stationID) %>%
   summarise(RantacrticusSite=sum(biomass)) %>% 
@@ -742,7 +742,7 @@ SmRantacrticus = SCFall %>%
 
 
 # Scolecithricella spp., all stages
-SmScolecithricella = SCFall %>%
+SmScolecithricella = SCMay %>%
   filter(species %in% c("Scolecithricella_minor", "Scolecithricella_sp.", "Pseudoamallothrix_ovata", "Pseudoamallothrix_sp.", "minor") | sciName == "Scolecithricella_sp.") %>%  # "ovata" not in species column
   group_by(Year, stationID) %>%
   summarise(ScolecithricellaSite=sum(biomass)) %>% 
@@ -753,7 +753,7 @@ SmScolecithricella = SCFall %>%
 
 
 # Tortanus discaudata, all stages; NB none in May GAK samples (only appeared once in sampling record)
-SmTdiscaudata = SCFall %>%
+SmTdiscaudata = SCMay %>%
   filter(species %in% c("Tortanus_discaudatus", "discaudatus")) %>% 
   group_by(Year, stationID) %>%
   summarise(TdiscaudataSite=sum(biomass)) %>% 
@@ -767,7 +767,7 @@ SmTdiscaudata = SCFall %>%
 # 2. Other copepod taxa present in CalVET nets but not assigned to size / net group by Coyle & Pinchuk 2003:
 
 # Metridia sp. Follow Coyle & Pinchuk's 2003 classification for M. okhotensis
-SmMetridia = SCFall %>%
+SmMetridia = SCMay %>%
   filter(species == "Metridia_sp." | sciName %in% c("Metridia sp.", "Metridia spp.")) %>%
   group_by(Year, stationID) %>%
   summarise(MetridiaSite=sum(biomass)) %>% 
@@ -778,7 +778,7 @@ SmMetridia = SCFall %>%
 
 
 # Microsetella sp. only found in 2004.  Adult females are 0.02mg. Therefore take all stages from CalVET nets
-SmMicrosetella = SCFall %>%
+SmMicrosetella = SCMay %>%
   filter(species == "Microsetella_sp." | sciName == "Microsetella sp.") %>%
   group_by(Year, stationID) %>%
   summarise(MicrosetellaSite=sum(biomass)) %>% 
@@ -792,7 +792,7 @@ SmMicrosetella = SCFall %>%
 #Parasitic on marine benthic inverts (polychaetes, gastropods); only the first nauplius & adult stages are free-swimming (adults don't feed)
 
 # Neocalanus sp.  Follow Coyle & Pinchuk's 2003 classification for N. cristatus; NB none of these stages are in May GAK samples
-SmNeocalanus = SCFall %>%
+SmNeocalanus = SCMay %>%
   filter(species == "Neocalanus_sp." | sciName == "Neocalanus_sp.") %>% 
   filter(stage %in% c("I", "II", "C1", "C2")) %>%
   group_by(Year, stationID) %>%
@@ -810,7 +810,7 @@ SmNeocalanus = SCFall %>%
 # class Branchiopoda, family Podonidae (Cladocerans: Evadne sp.  & Podon sp.)  
 # Judging from length comparisons with Neocalanus sp (these are much smaller in length) on Seward Line website, all stages of Branchiopods should come from CalVET
 # NB None in May GAK samples
-SmPodonidae = SCFall %>%
+SmPodonidae = SCMay %>%
   filter(family == "Podonidae") %>% 
   group_by(Year, stationID) %>%
   summarise(PodonidaeSite=sum(biomass)) %>% 
@@ -823,56 +823,37 @@ SmPodonidae = SCFall %>%
 # -----------------------------------------------------------------------------------
 
 # Create dataframe with years:
-FallSmallZoop=data.frame('Year'=c(1998:2010))
+MaySmallZoop=data.frame('Year'=c(1998:2010))
 
 # Merge in the taxon-specific biomass data
-FallSmallZoop <- merge(FallSmallZoop,SmAcartia,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmAetideidae,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmCmarshallae,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmCpacificus,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmCcolumbiae,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmCabdominalis,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmClausocalanus,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmEamphitrites,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmEbungii,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmPelongata,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmEurytemora,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmHeterorhabdus,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmLucicutia,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmMesocalanus,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmMokhotensis,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmMpacifica,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmMicrocalanus,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmNcristatus,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmNpflemingeri,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmOithona,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmOncaea,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmParacalanus,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmPseudocalanus,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmRantacrticus,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmScolecithricella,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmMetridia,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmMicrosetella,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmNeocalanus,all.x=T)
-FallSmallZoop <- merge(FallSmallZoop,SmPodonidae,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmAcartia,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmAetideidae,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmCmarshallae,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmCpacificus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmCcolumbiae,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmCabdominalis,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmClausocalanus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmEamphitrites,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmEbungii,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmPelongata,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmEurytemora,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmHeterorhabdus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmLucicutia,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMesocalanus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMokhotensis,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMpacifica,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMicrocalanus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmNcristatus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmNpflemingeri,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmOithona,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmOncaea,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmParacalanus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmPseudocalanus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmRantacrticus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmScolecithricella,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMetridia,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmMicrosetella,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmNeocalanus,all.x=T)
+MaySmallZoop <- merge(MaySmallZoop,SmPodonidae,all.x=T)
 
-View(FallSmallZoop)
-
-FallLSmallZoop = FallSmallZoop %>%
-  mutate(Month = as.numeric(c(10, 10, 10, 10, 10, 10, 10, 9, 9, 9, 9, 9, 9)))
-
-FallSmCopepods <- FallSmallZoop %>%
-  select(-SmPodonidae)
-#View(FallSmCopepods)
-# sum Fall small total copepod biomass
-FallTotSmCopepodBiomass = FallSmCopepods %>%
-  mutate(FallTotSmCopepodBiomass = rowSums(FallSmCopepods[,2:29], na.rm=T)) %>%
-  select(Year, Month, FallTotSmCopepodBiomass)
-View(FallTotSmCopepodBiomass)
-
-ggplot(data=FallTotSmCopepodBiomass, aes(y=FallTotSmCopepodBiomass, x=Year, colour=as.factor(Month))) +
-  geom_point(size=4) + geom_line() + theme_bw() + 
-  scale_y_log10() + coord_cartesian(xlim = c(1996, 2012)) + coord_cartesian(ylim = c(0.01, 0.1)) +
-  ylab("Mean Fall Total Small Copepod Biomass across GAK sites (g WW / m3)") +
-  xlab("Year")
-  
+View(MaySmallZoop)
