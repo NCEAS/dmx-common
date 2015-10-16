@@ -12,8 +12,6 @@ library(tidyr)
 library(ggplot2)
 
 
-# 1. Manipulate Metadata table to extract samples for Wide Bay:
-
 # Load metadata ("adfgSmallmeshHaul.csv")
 URL_SMTh <- "https://drive.google.com/uc?export=download&id=0B1XbkXxdfD7ud09TSDdMeWV3TGs"
 SMThGet <- GET(URL_SMTh)
@@ -47,4 +45,41 @@ View(SMTmetadata)
 str(SMTmetadata)
 
 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+# Load biological data ("adfg_smallmesh_catch.csv")
+URL_SMTc <- "https://drive.google.com/uc?export=download&id=0B1XbkXxdfD7uekVENlBqaFJLaWM"
+SMTcGet <- GET(URL_SMTc)
+SMTc1 <- content(SMTcGet, as='text')
+SMTc <- read.csv(file=textConnection(SMTc1),stringsAsFactors=F)
+head(SMTc)
+str(SMTc)
+
+# Clean up column names
+SMTcatch = SMTc %>%
+  rename(raceCode = race_code) %>%
+  rename(catchnum = num_caught)
+head(SMTcatch)
+str(SMTcatch)
+
+# Some hauls have multiple catchkg and catchnum entries for the same species
+# Sum catchkg and catchNum over rows for which cruise, haul, and race_code are identical 
+# (as per email conversation with Kally Spalinger (ADFG), July 2015)
+
+SMTcatchAgg = SMTcatch %>%
+  group_by(cruise, haul, raceCode) %>%
+  summarise(catchKg=sum(catchkg), catchNum=sum(catchnum)) %>%
+  ungroup
+View(SMTcatchAgg)
+str(SMTcatchAgg)
+# Test:
+# For cruise=7759, haul=128, race_code=10130: catchkg should be 23.587+2.268 = 25.8550.  Yes.
+
+
+# Work with catchKg from here onwards, because catchnum is not always recorded.
+
+# For catchKg, make each species into a column; now data are organized by Haul:
+SMTcatchSpread = SMTcatchAgg %>%
+  select(-catchNum) %>%
+  spread(raceCode,catchKg,fill=0)
+View(SMTcatchSpread)
