@@ -76,10 +76,28 @@ str(SMTcatchAgg)
 # For cruise=7759, haul=128, race_code=10130: catchkg should be 23.587+2.268 = 25.8550.  Yes.
 
 
-# Work with catchKg from here onwards, because catchnum is not always recorded.
-
+# Work with catchKg from here onwards, because catchNum is not always recorded.
 # For catchKg, make each species into a column; now data are organized by Haul:
 SMTcatchSpread = SMTcatchAgg %>%
   select(-catchNum) %>%
   spread(raceCode,catchKg,fill=0)
 View(SMTcatchSpread)
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+# Join metadata & biological dataframes
+
+# create Sample info columns for metadata & biological dataframes (to use when joining dataframes)
+SMTmetadata1 = SMTmetadata %>%
+  unite(Sample, cruise:haul, sep=" ", remove=FALSE)
+str(SMTmetadata1)
+
+SMTcatchSpread1 = SMTcatchSpread %>%
+  unite(Sample,cruise:haul,sep=" ",remove=FALSE) %>%
+  select(-cruise, -haul) # remove these for ease of joining dataframes below
+str(SMTcatchSpread1) 
+
+# join the dataframes
+SMT = full_join(SMTmetadata1, SMTcatchSpread1, by = "Sample")
+View(SMT)
+str(SMT)
