@@ -93,7 +93,41 @@ plot(GAK$Year ~ GAK$Month, pch=16) # MOCNESS & Multi net
 May = GAK %>%
   filter(Month == 5)
 
+
+# ---------------------------------------------------------------------------------------------------
+
+# Create function for large zooplankton biomass (code does not work yet)
+#filterStages <- function(filterConditions, df) {
+#  taxon <- filterConditions$taxon
+#  stageVector <- filterConditions$stageVector
+#  SubsettedData <- df %>%
+#    filter(sciName == taxon) %>% 
+#    filter(stage %in% stageVector)
+
+#  return(SubsettedData)
+#}
+
+#filterConditions <- list(taxon = "Calanus marshallae", stageVector = c("IV", "V", "C4", "C5", "AF", "AM"))
+#filterConditions1 <- list(taxon = "Calanus pacificus", stageVector = c("V", "C5", "AF", "AM"))
+
+#bigList <- list(filterConditions, filterConditions1)
+#lapply(bigList, filterStages, df) # lines 100-113 work, this one does not. Problem = list flattenning?
+
+
+
+# ---------------------------------------------------------------------------------------------------
+
 # 1. Copepod size / net classifications from Coyle & Pinchuk 2003:
+
+MayBiomass = function(LgStages) {
+  group_by(Year, stationID) %>%
+    summarise(AetideidaeSite=sum(biomass)) %>%
+    ungroup %>%
+    group_by(Year) %>%
+    summarise(Aetideidae=mean(AetideidaeSite)) %>% 
+    ungroup
+}
+
 
 # Aetideidae, stages V, Adults
 Aetideidae = May %>%
