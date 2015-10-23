@@ -24,20 +24,28 @@ library(taxize)
 
 
 # problem with dates in online file (compared with https://www.sfos.uaf.edu/sewardline/results/DataByCruise2.html)
-# Temporarily use locally-stored file with corrected dates until changes are verified by Russ Hopcroft
-setwd("~/Google Drive/GoA project/Data/Datasets/Data Packages/AOOS NCEAS Packages/Seward Line Zooplankton 97-11")
-SCZo.a=read.csv('df35b.56.4-ltopZooplanktonData_CW corrected TXF06 date.csv', header=T, stringsAsFactors=F, strip.white=TRUE)
+# Temporarily use locally-stored file with corrected dates until changes are verified by Russ Hopcroft:
+URL_SCZo.a <- "https://drive.google.com/uc?export=download&id=0B1XbkXxdfD7uVXZBM2ZrM050VkE"
+SCZo.aGet <- GET(URL_SCZo.a)
+SCZo.a1 <- content(SCZo.aGet, as='text')
+SCZo.a <- read.csv(file=textConnection(SCZo.a1),stringsAsFactors=F, strip.white=TRUE)
 head(SCZo.a)
+#setwd("~/Google Drive/GoA project/Data/Datasets/Data Packages/AOOS NCEAS Packages/Seward Line Zooplankton 97-11")
+#SCZo.a=read.csv('df35b.56.4-ltopZooplanktonData_CW corrected TXF06 date.csv', header=T, stringsAsFactors=F, strip.white=TRUE)
+#head(SCZo.a)
 
 
-# Pull 2012 data from AOOS Ocean Workspace (requires log-in here: https://workspace.aoos.org/login).
-# Files online are .xls, so I'm using a .csv saved locally (upload it to our server?)
-# Load CalVET net (meshSize = 149 um), 2010-2012:
-setwd("~/Google Drive/GoA project/Data/Datasets/Data Packages/AOOS Ocean Workspace Packages/Seward Line Zooplankton 2010-12")
-SCZo.b=read.csv('Seward_Zoodata_Calvet_2010_2012_update.csv', header=T, stringsAsFactors=F, strip.white=TRUE)
+# Load CalVET net (meshSize = 149 um), 2010-2012 (from AOOS Ocean Workspace):
+URL_SCZo.b <- "https://drive.google.com/uc?export=download&id=0B1XbkXxdfD7uSDE4UTF2d2J6SnM"
+SCZo.bGet <- GET(URL_SCZo.b)
+SCZo.b1 <- content(SCZo.bGet, as='text')
+SCZo.b <- read.csv(file=textConnection(SCZo.b1),stringsAsFactors=F, strip.white=TRUE)
 head(SCZo.b)
-str(SCZo.b)
-names(SCZo.b)
+#setwd("~/Google Drive/GoA project/Data/Datasets/Data Packages/AOOS Ocean Workspace Packages/Seward Line Zooplankton 2010-12")
+#SCZo.b=read.csv('Seward_Zoodata_Calvet_2010_2012_update.csv', header=T, stringsAsFactors=F, strip.white=TRUE)
+#head(SCZo.b)
+#str(SCZo.b)
+#names(SCZo.b)
 
 # 1997-2011 dataset: extract year, month, day, time:
 SCZo.a1=SCZo.a %>%
