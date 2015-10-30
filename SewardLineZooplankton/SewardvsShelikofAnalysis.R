@@ -13,6 +13,21 @@ View(SCZo1)
 source('SewardLineLgZoopProcessingScript.R') # does not work???
 View(DepthInt.taxinfo)
 
+
+
+sourceDir <- function(path, trace=TRUE) {
+  for (nm in list.files(path, pattern = "[.][Rr]$")) {
+    if(trace) cat(nm,":")
+    source(file.path(path, nm))
+    if(trace) cat("\n")
+  }
+}
+
+sourceDir("Seward Line Zooplankton")
+#sourceDir("Seward Line Zooplankton/Cleaning_Scripts")
+
+
+
 # Purpose: Is the subset of copepod species sampled at Shelikof Strait representative of total copepod abundance?
 # Use Seward Line data to analyze
 
