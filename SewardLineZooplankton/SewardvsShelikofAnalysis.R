@@ -5,25 +5,17 @@
 #######################################################################
 
 
-# Call data from Small Zooplankton Cleaning script
-source('SewardLineSmallZoopCleaningScript.R')
-View(SCZo1)
+# Run SewardLineSmZoopCleaningScript and SewardLineLgZoopCleaningScript
+# Run SewardLineLgZoopProcessingScript up to line 54
 
-# Call data from Large Zooplankton Processing script
-source('SewardLineLgZoopProcessingScript.R') # does not work???
-View(DepthInt.taxinfo)
-
-
-
-sourceDir <- function(path, trace=TRUE) {
-  for (nm in list.files(path, pattern = "[.][Rr]$")) {
-    if(trace) cat(nm,":")
-    source(file.path(path, nm))
-    if(trace) cat("\n")
-  }
-}
-
-sourceDir("Seward Line Zooplankton")
+#sourceDir <- function(path, trace=TRUE) {
+#  for (nm in list.files(path, pattern = "[.][Rr]$")) {
+#    if(trace) cat(nm,":")
+#    source(file.path(path, nm))
+#    if(trace) cat("\n")
+#  }
+#}
+#sourceDir("SewardLineZooplankton")
 #sourceDir("Seward Line Zooplankton/Cleaning_Scripts")
 
 
@@ -32,18 +24,6 @@ sourceDir("Seward Line Zooplankton")
 # Use Seward Line data to analyze
 
 # use ACC (Alaska Coastal Current) sites. For Seward Line, ACC sites are GAK 1-4
-
-# use only: 
-# (i) size classes focused on (ie attempt to count 30) as per Siefert & Incze 1991 p4 (1989 Sampling report)
-# and (ii) which were quantitatively retained by nets (re body size & lack of net avoidance)
-# Calanus marshallae (C4 - adults)
-# C. pacificus (C4 - adults)
-# Eucalanus bungii (C1 - adults)
-# Metridia spp. (No, not counted to 30)
-# M. pacifica (C4 - adults)
-# Neocalanus cristatus (C4, C5)
-# N. plumchrus-flemingeri (C4, C5)
-# Pseudocalanus (C4 - adults)
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -55,56 +35,169 @@ May.s = SCZo1 %>%
   filter(stationID %in% c("GAK1", "GAK2", "GAK3", "GAK4")) %>%
   filter(Month == 5)
 
-# Calanus pacificus, stage IV
+
+# Neocalanus cristatus, stage II
+SSmNcristatus = May.s %>%
+  filter(species %in% c("Neocalanus_cristatus", "cristatus")) %>% 
+  filter(stage %in% c("II", "C2")) %>%
+  group_by(Year, stationID) %>%
+  summarise(NcristatusSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SSmNcristatus=mean(NcristatusSite)) %>% 
+  ungroup
+
+# Neocalanus spp (N. flemingeri + N. plumchurus), stages II, III  # NB none in May GAK samples
+SSmNpflemingeri = May.s %>%
+  filter(species %in% c("Neocalanus_plumchrus", "Neocalanus_flemingeri", "plumchrus", "flemingeri")) %>% 
+  filter(stage %in% c("II", "III", "C2", "C3")) %>%
+  group_by(Year, stationID) %>%
+  summarise(NpflemingeriSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SSmNpflemingeri=mean(NpflemingeriSite)) %>% 
+  ungroup
+
+
+# Eucalanus bungii, stages I - III
+SSmEbungii = May.s %>%
+  filter(species %in% c("Eucalanus_bungii", "bungii")) %>% 
+  filter(stage %in% c("I", "II", "III", "C1", "C2", "C3")) %>%
+  group_by(Year) %>% #, stationID) %>%
+  summarise(EbungiiSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SSmEbungii=mean(EbungiiSite)) %>% 
+  ungroup
+
+
+# Calanus marshallae, II-III
+SSmCmarshallae = May.s %>%
+  filter(species %in% c("Calanus_marshallae", "marshallae")) %>% 
+  filter(stage %in% c("II", "III", "C2", "C3")) %>%
+  group_by(Year, stationID) %>%
+  summarise(CmarshallaeSite=sum(abundance)) %>%
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SSmCmarshallae=mean(CmarshallaeSite)) %>%
+  ungroup
+
+
+# Calanus pacificus, IV
 SSmCpacificus = May.s %>%
-  filter(sciName == "Calanus pacificus") %>%
+  filter(species %in% c("Calanus_pacificus", "pacificus")) %>%  # does not include Aetideus pacificus
   filter(stage %in% c("IV", "C4")) %>%
   group_by(Year, stationID) %>%
-  summarise(SSmCpacificusSite=sum(abundance)) %>% 
+  summarise(CpacificusSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(SSmCpacificus=mean(SSmCpacificusSite)) %>% 
+  summarise(SSmCpacificus=mean(CpacificusSite)) %>% 
   ungroup
-#View(SSmCpacificus)
 
 
-# Eucalanus bungii, stages I-III
-SSmEbungii = May.s %>%
-  filter(sciName == "Eucalanus bungii") %>% 
+# Metridia pacifica/lucens, IV, V, AM (is there a stage VI?)
+SSmMpacifica = May.s %>%
+  filter(species == "Metridia_pacifica" | sciName =="Metridia pacifica") %>% 
+  filter(stage %in% c("IV", "V", "C4", "C5", "AM", "Male", "males")) %>%  # don't need to look at NAs, there are none for M pacifica
+  group_by(Year, stationID) %>%
+  summarise(MpacificaSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SSmMpacifica=mean(MpacificaSite)) %>% 
+  ungroup
+
+
+
+
+# Metridia spp., stage IV 
+# Metridia sp. Follow Coyle & Pinchuk's 2003 classification for M. okhotensis
+SSmMetridia = May.s %>%
+  filter(species == "Metridia_sp." | sciName %in% c("Metridia sp.", "Metridia spp.") | species %in% c("Metridia_okhotensis", "okhotensis")) %>%
+  filter(stage %in% c("IV", "C4")) %>%
+  group_by(Year, stationID) %>%
+  summarise(MetridiaSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SSmMetridia=mean(MetridiaSite)) %>% 
+  ungroup
+
+
+
+# Metrididae, I-III
+# Family Metridinidae includes Gaussia, Metridia, Pleuromamma.  
+# EcoFOCI has already specified Metridia spp. as per above, 
+# Gaussia princpeps was observed only once, at GAK12 in Sept 2007
+# therefore include only Pleuromamma, P. abdominalis, P. scutullata, P. xiphias in this category
+SMetridinidae = May.s %>%
+  filter(genus == "Pleuromamma") %>% 
   filter(stage %in% c("I", "II", "III", "C1", "C2", "C3")) %>%
   group_by(Year, stationID) %>%
-  summarise(SSmEbungiiSite=sum(abundance)) %>% 
+  summarise(SMetridinidaeSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(SSmEbungii=mean(SSmEbungiiSite)) %>% 
+  summarise(SMetridinidae=mean(SMetridinidaeSite)) %>% 
   ungroup
-#View(SSmEbungii)
 
 
-# Metridia pacifica, stages IV, V, Adult Males
-SSmMpacifica = May.s %>%
-  filter(sciName == "Metridia pacifica") %>% 
-  filter(stage %in% c("IV", "V", "C4", "C5", "AM")) %>%
-  group_by(Year, stationID) %>%
-  summarise(SSmMpacificaSite=sum(abundance)) %>% 
-  ungroup %>%
-  group_by(Year) %>%
-  summarise(SSmMpacifica=mean(SSmMpacificaSite)) %>% 
-  ungroup
-#View(SSmMpacifica)
-
-
-# Pseudocalanus spp., stages IV - adult
-SSmPseudocalanus = May.s %>%
+# Pseudocalanus spp, I-V, AM, AF (all stages)
+SPseudocalanus = May.s %>%
   filter(species == "Pseudocalanus_sp." | sciName == "Pseudocalanus_sp.") %>% 
-  filter(stage %in% c("IV", "V", "C4", "C5", "AM", "AF")) %>%
   group_by(Year, stationID) %>%
-  summarise(SPseudocalanusSite=sum(abundance)) %>% 
+  summarise(PseudocalanusSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(SSmPseudocalanus=mean(SPseudocalanusSite)) %>% 
+  summarise(SPseudocalanus=mean(PseudocalanusSite)) %>% 
   ungroup
-#View(SSmPseudocalanus)
+
+
+# Acartia spp., Adults
+SAcartia = May.s %>%
+  filter(family == "Acartiidae") %>%
+  filter(stage %in% c("AM", "AF")) %>%
+  group_by(Year, stationID) %>%
+  summarise(AcartiaSite=sum(abundance)) %>% # find total biomass of all Acartia life stages for each GAK site
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SAcartia=mean(AcartiaSite)) %>% # take mean Acartia biomass across all GAK sites
+  ungroup
+
+
+
+# Oithona spp, stage V, AM, AF
+SOithona = May.s %>%
+  filter(species %in% c("Oithona_similis", "Oithona_spinirostris", "Oithona_sp.", "similis", "spinirostris") | sciName == "Oithona_sp.") %>%
+  filter(stage %in% c("V", "C5", "AM", "AF")) %>%
+  group_by(Year, stationID) %>%
+  summarise(OithonaSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SOithona=mean(OithonaSite)) %>% 
+  ungroup
+
+
+# Unidentified Calanids, I-III (use stage designation of Calanus, Mesocalanus, Neocalanus) - ALL SHOULD COME FROM SMALL MESH NETS
+# Unidentified Calanids, damaged I-II and undetermined stages
+SCalanids = May.s %>%
+  filter(family == "Calanidae" & species %in% c(NA, "N/A")) %>%  # works as desired
+  group_by(Year, stationID) %>%
+  summarise(CalanidsSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SCalanids=mean(CalanidsSite)) %>% 
+  ungroup
+
+# Other copepoda (damaged), Adults
+
+# Cladocerans <5mm (153um mesh) (order)  ALL FROM SMALL MESH NET
+SPodonidae = May.s %>%
+  filter(family == "Podonidae") %>% 
+  group_by(Year, stationID) %>%
+  summarise(PodonidaeSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SPodonidae=mean(PodonidaeSite)) %>% 
+  ungroup
+
 
 # -----------------------
 
@@ -112,12 +205,21 @@ SSmPseudocalanus = May.s %>%
 SACCMaySmZoAbund=data.frame('Year'=c(1998:2010))
 
 # Merge in the taxon-specific biomass data
-SACCMaySmZoAbund <- merge(SACCMaySmZoAbund,SSmCpacificus,all.x=T)
+SACCMaySmZoAbund <- merge(SACCMaySmZoAbund,SSmNcristatus,all.x=T)
+SACCMaySmZoAbund <- merge(SACCMaySmZoAbund,SSmNpflemingeri ,all.x=T)
 SACCMaySmZoAbund <- merge(SACCMaySmZoAbund,SSmEbungii,all.x=T)
+SACCMaySmZoAbund <- merge(SACCMaySmZoAbund,SSmCmarshallae,all.x=T)
+SACCMaySmZoAbund <- merge(SACCMaySmZoAbund,SSmCpacificus,all.x=T)
 SACCMaySmZoAbund <- merge(SACCMaySmZoAbund,SSmMpacifica,all.x=T)
-SACCMaySmZoAbund <- merge(SACCMaySmZoAbund,SSmPseudocalanus,all.x=T)
+SACCMaySmZoAbund <- merge(SACCMaySmZoAbund,SSmMetridia,all.x=T)
+SACCMaySmZoAbund <- merge(SACCMaySmZoAbund,SMetridinidae,all.x=T)
+SACCMaySmZoAbund <- merge(SACCMaySmZoAbund,SPseudocalanus,all.x=T)
+SACCMaySmZoAbund <- merge(SACCMaySmZoAbund,SAcartia,all.x=T)
+SACCMaySmZoAbund <- merge(SACCMaySmZoAbund,SOithona,all.x=T)
+SACCMaySmZoAbund <- merge(SACCMaySmZoAbund,SCalanids,all.x=T)
+SACCMaySmZoAbund <- merge(SACCMaySmZoAbund,SPodonidae,all.x=T)
 
-#View(SACCMaySmZoAbund)
+View(SACCMaySmZoAbund)
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -129,30 +231,29 @@ MayACC = DepthInt.taxinfo %>%
   filter(stationID %in% c("GAK1", "GAK2", "GAK3", "GAK4")) %>%
   filter(Month == 5)
 
-# Calanus marshallae, stages IV, V
-SLgCmarshallae = MayACC %>%
-  filter(sciName == "Calanus marshallae") %>% 
-  filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
+
+# Neocalanus cristatus, stages III, V, adults (no IV?)
+SLgNcristatus = MayACC %>%
+  filter(sciName == "Neocalanus cristatus") %>% 
+  filter(stage %in% c("III", "IV", "V", "C3", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(SLgCmarshallaeSite=sum(abundance)) %>%
+  summarise(NcristatusSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(SLgCmarshallae=mean(SLgCmarshallaeSite)) %>%
+  summarise(SLgNcristatus=mean(NcristatusSite)) %>% 
   ungroup
-#View(SLgCmarshallae)
 
 
-# Calanus pacificus, stages V, adults
-SLgCpacificus = MayACC %>%
-  filter(sciName == "Calanus pacificus") %>%
-  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
+# Neocalanus spp (N. flemingeri + N. plumchurus), stages IV, V, adults
+SLgNpflemingeri = MayACC %>%
+  filter(sciName %in% c("Neocalanus plumchrus", "Neocalanus flemingeri")) %>% 
+  filter(stage %in% c("IV", "V", "C4", "C5", "CV_large", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(SLgCpacificusSite=sum(abundance)) %>% 
+  summarise(NpflemingeriSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(SLgCpacificus=mean(SLgCpacificusSite)) %>% 
+  summarise(SLgNpflemingeri=mean(NpflemingeriSite)) %>% 
   ungroup
-#View(SLgCpacificus)
 
 
 # Eucalanus bungii, stages IV, V, adults
@@ -160,52 +261,242 @@ SLgEbungii = MayACC %>%
   filter(sciName == "Eucalanus bungii") %>% 
   filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(SLgEbungiiSite=sum(abundance)) %>% 
+  summarise(EbungiiSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(SLgEbungii=mean(SLgEbungiiSite)) %>% 
+  summarise(SLgEbungii=mean(EbungiiSite)) %>% 
   ungroup
-#View(SLgEbungii)
 
 
-# Metridia pacifica, stages Females
+# Calanus marshallae, stages IV, V, adults
+SLgCmarshallae = MayACC %>%
+  filter(sciName == "Calanus marshallae") %>% 
+  filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(CmarshallaeSite=sum(abundance)) %>%
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SLgCmarshallae=mean(CmarshallaeSite)) %>%
+  ungroup
+
+
+# Calanus pacificus, stages V, adults
+SLgCpacificus = MayACC %>%
+  filter(sciName == "Calanus pacificus") %>%
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
+  group_by(Year, stationID) %>%
+  summarise(CpacificusSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SLgCpacificus=mean(CpacificusSite)) %>% 
+  ungroup
+
+
+# Metridia pacifica/lucens, Females
 SLgMpacifica = MayACC %>%
   filter(sciName == "Metridia pacifica") %>% 
   filter(stage == "AF") %>%
   group_by(Year, stationID) %>%
-  summarise(SLgMpacificaSite=sum(abundance)) %>% 
+  summarise(MpacificaSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(SLgMpacifica=mean(SLgMpacificaSite)) %>% 
+  summarise(SLgMpacifica=mean(MpacificaSite)) %>% 
   ungroup
-#View(SLgMpacifica)
 
 
-# Neocalanus cristatus, stages IV, V
-SLgNcristatus = MayACC %>%
-  filter(sciName == "Neocalanus cristatus") %>% 
-  filter(stage %in% c("IV", "V", "C4", "C5")) %>%
+# Metridia spp., stages V, adults
+SLgMetridia = MayACC %>%
+  filter(sciName == c("Metridia", "Metridia okhotensis")) %>%
+  filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(SLgNcristatusSite=sum(abundance)) %>% 
+  summarise(MetridiaSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(SLgNcristatus=mean(SLgNcristatusSite)) %>% 
+  summarise(SLgMetridia=mean(MetridiaSite)) %>% 
   ungroup
-#View(SLgNcristatus)
 
 
-# Neocalanus plumchrus-flemingeri, stages IV, V
-SLgNpflemingeri = MayACC %>%
-  filter(sciName %in% c("Neocalanus plumchrus", "Neocalanus flemingeri")) %>% 
-  filter(stage %in% c("IV", "V", "C4", "C5", "CV_large")) %>%
+# Other copepoda (damaged), Adults
+
+
+# Euphausiids:
+
+# Thysanoessa: in Seward Line dataset, this includes the 5 species listed here plus "Thysanoessa" (which looks like mostly juvenile stages not id'd to species)
+# Thysanoessa raschii, Adult + Juvenile
+# Thysanoessa inermis, Adult + Juvenile
+# Thysanoessa spinifera, Adult + Juvenile
+# Thysanoessa longipes, Adult + Juvenile
+# Thysanoessa inspinata, Adult + Juvenile
+SThysanoessa = MayACC %>%
+  filter(genus == "Thysanoessa") %>% 
   group_by(Year, stationID) %>%
-  summarise(SLgNpflemingeriSite=sum(abundance)) %>% 
+  summarise(ThysanoessaSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(SLgNpflemingeri=mean(SLgNpflemingeriSite)) %>% 
+  summarise(SThysanoessa=mean(ThysanoessaSite)) %>% 
   ungroup
-#View(SLgNpflemingeri)
 
+
+# Tessarabrachion oculatum, Adult + Juvenile (ITIS valid name = Tessarabrachion oculatus)
+SToculatum = MayACC %>%
+  filter(sciName == "Tessarabrachion oculatus") %>% 
+  group_by(Year, stationID) %>%
+  summarise(ToculatumSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SToculatum=mean(ToculatumSite)) %>% 
+  ungroup
+
+
+# Other euphausiids (damaged), Adult + Juvenile
+
+
+# Euphausiid, stage = furcillia
+# Euphausiid, stage = calyptopis 1-3
+# Euphausiid, stage = nauplii
+SEuphJuv = MayACC %>%
+  filter(sciName == "Euphausiacea") %>% 
+  filter(stage %in% c("furcilia", "calyptopis", "nauplii", "metanauplii")) %>% #consider also using "juvenile" and "juveniles"?
+  group_by(Year, stationID) %>%
+  summarise(EuphJuvSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SEuphJuv=mean(EuphJuvSite)) %>% 
+  ungroup
+
+
+
+# Cirripedia, nauplii, cyprid, medusae (<5mm)
+# nb medusae are not in Seward dataset
+SCirripedia = MayACC %>%
+  filter(sciName == "Cirripedia") %>% 
+  group_by(Year, stationID) %>%
+  summarise(CirripediaSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SCirripedia=mean(CirripediaSite)) %>% 
+  ungroup
+
+
+# Chaetnognatha, all sizes
+SChaetnognatha = MayACC %>%
+  filter(phylum == "Chaetnognatha") %>% 
+  group_by(Year, stationID) %>%
+  summarise(ChaetnognathaSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SChaetnognatha=mean(ChaetnognathaSite)) %>% 
+  ungroup
+
+
+
+# Natantia, larvae, adults, juveniles 
+#(decapod families that swim, ie shrimp (infraorder == c(Caridea, Procarididea)), prawns (suborder == Dendrobranchiata), boxer shrimp (infraorder == Stenopodidea))
+SNatantia = MayACC %>%
+  filter(suborder == "Dendrobranchiata" | infraorder =="Caridea") %>%
+  group_by(Year, stationID) %>%
+  summarise(NatantiaSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SNatantia=mean(NatantiaSite)) %>% 
+  ungroup
+
+
+
+# Cnidarian medusae >5mm
+SCnidaria = MayACC %>%
+  filter(phylum == "Cnidaria") %>%
+  group_by(Year, stationID) %>%
+  summarise(CnidariaSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SCnidaria=mean(CnidariaSite)) %>% 
+  ungroup
+
+
+# Ctenophora, all sizes  # not recorded at Seward Line
+
+
+# Gammaridea, all sizes (order = Amphipoda)
+# Hyperiidea, all sizes (order = Amphipoda)
+SAmphipoda = MayACC %>%
+  filter(order == "Amphipoda") %>%
+  group_by(Year, stationID) %>%
+  summarise(AmphipodaSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SAmphipoda=mean(AmphipodaSite)) %>% 
+  ungroup
+
+# Mysidacea, all sizes
+SMysidacea = MayACC %>%
+  filter(order == "Mysida") %>%
+  group_by(Year, stationID) %>%
+  summarise(MysidaceaSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SMysidacea=mean(MysidaceaSite)) %>% 
+  ungroup
+
+
+# Siphonophora, all sizes # already included in Cnidaria above
+
+# Ostracoda <5mm
+SOstracoda = MayACC %>%
+  filter(class == "Ostracoda") %>%
+  group_by(Year, stationID) %>%
+  summarise(OstracodaSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SOstracoda=mean(OstracodaSite)) %>% 
+  ungroup
+
+
+# Thecosomata <5mm (Pteropods)
+SThecosomata = MayACC %>%
+  filter(order == "Thecosomata") %>%
+  group_by(Year, stationID) %>%
+  summarise(ThecosomataSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SThecosomata=mean(ThecosomataSite)) %>% 
+  ungroup
+
+
+# Anomura larvae
+SAnomura = MayACC %>%
+  filter(infraorder == "Anomura") %>%
+  filter(stage == "zoea") %>%
+  group_by(Year, stationID) %>%
+  summarise(AnomuraSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SAnomura=mean(AnomuraSite)) %>% 
+  ungroup
+
+# Brachyura larvae
+SBrachyura = MayACC %>%
+  filter(infraorder == "Brachyura") %>%
+  filter(stage == "zoea") %>%
+  group_by(Year, stationID) %>%
+  summarise(BrachyuraSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SBrachyura=mean(BrachyuraSite)) %>% 
+  ungroup
+
+
+# Fish larvae
+# probably not retained at Seward as much as at Shelikof?
+SIchthyoplankton = MayACC %>%
+  filter(subphylum == "Vertebrata") %>%
+  filter(stage == "larvae") %>%
+  group_by(Year, stationID) %>%
+  summarise(IchthyoplanktonSite=sum(abundance)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(SIchthyoplankton=mean(IchthyoplanktonSite)) %>% 
+  ungroup
 
 # -----------------------
 
@@ -213,64 +504,69 @@ SLgNpflemingeri = MayACC %>%
 SACCMayLgZoAbund=data.frame('Year'=c(1998:2010))
 
 # Merge in the taxon-specific biomass data
-SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SLgCmarshallae,all.x=T)
-SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SLgCpacificus,all.x=T)
-SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SLgEbungii,all.x=T)
-SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SLgMpacifica,all.x=T)
 SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SLgNcristatus,all.x=T)
 SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SLgNpflemingeri,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SLgEbungii,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SLgCmarshallae,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SLgCpacificus,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SLgMpacifica,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SLgMetridia,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SThysanoessa,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SToculatum,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SEuphJuv,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SCirripedia,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SChaetnognatha,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SNatantia,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SCnidaria,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SAmphipoda,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SMysidacea,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SOstracoda,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SThecosomata,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SAnomura,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SBrachyura,all.x=T)
+SACCMayLgZoAbund <- merge(SACCMayLgZoAbund,SIchthyoplankton,all.x=T)
 
-#View(SACCMayLgZoAbund)
+View(SACCMayLgZoAbund)
 
 # ---------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------
 
 # Merge Small & Large Zooplankton abundance datasets (Shelikof sp subset)
-SACCMayZoop = full_join(SACCMaySmZoAbund, SACCMayLgZoAbund, by = "Year")
+SACCMayZoop <- full_join(SACCMaySmZoAbund, SACCMayLgZoAbund, by = "Year")
 SACCMayZoop[is.na(SACCMayZoop)] <- 0 # replace NA with 0
 str(SACCMayZoop)
-#View(SACCMayZoop)
-
-# Sum large & small zooplankton abundance by species
-STACCMayZoop = SACCMayZoop %>%
-  rename(SCmarshallae = SLgCmarshallae) %>%
-  mutate(SCpacificus = SSmCpacificus + SLgCpacificus) %>%
-  mutate(SEbungii = SSmEbungii + SLgEbungii) %>%
-  mutate(SMpacifica = SSmMpacifica + SLgMpacifica) %>%
-  rename(SNcristatus = SLgNcristatus) %>%
-  rename(SNpflemingeri = SLgNpflemingeri) %>%
-  rename(SPseudocalanus = SSmPseudocalanus) %>%
-  select(Year, SCmarshallae, SCpacificus, SEbungii, SMpacifica, SNcristatus, SNpflemingeri, SPseudocalanus)
-STACCMayZoop = STACCMayZoop %>%
-  mutate(SACCTotCopepods = rowSums(STACCMayZoop[,2:8]))
-View(STACCMayZoop)
+names(SACCMayZoop)
 
 
-# Plot data
-ggplot(data=STACCMayZoop, aes(Year, y = value, color = variable)) + 
-  geom_point(aes(y = SCmarshallae, col = "C. marshallae")) +
-  geom_point(aes(y = SCpacificus, col = "C. pacificus")) +
-  geom_point(aes(y = SEbungii, col = "E. bungii")) +
-  geom_point(aes(y = SMpacifica, col = "M. pacifica")) +
-  geom_point(aes(y = SNcristatus, col = "N. cristatus")) +
-  geom_point(aes(y = SNpflemingeri, col = "N. plumchurus-flemingeri")) +
-  geom_point(aes(y = SPseudocalanus, col = "Pseudocalanus")) +
-  geom_point(aes(y = SACCTotCopepods, col = "Total")) +
-  geom_line(aes(y = SCmarshallae, col = "C. marshallae")) +
-  geom_line(aes(y = SCpacificus, col = "C. pacificus")) +
-  geom_line(aes(y = SEbungii, col = "E. bungii")) +
-  geom_line(aes(y = SMpacifica, col = "M. pacifica")) +
-  geom_line(aes(y = SNcristatus, col = "N. cristatus")) +
-  geom_line(aes(y = SNpflemingeri, col = "N. plumchurus-flemingeri")) +
-  geom_line(aes(y = SPseudocalanus, col = "Pseudocalanus")) +
-  geom_line(aes(y = SACCTotCopepods, col = "Total")) +
-  theme_bw() +
-  scale_y_log10() +
-  coord_cartesian(xlim = c(1996, 2012)) +
-  ylab("Mean May Copepod Abundance, GAK1-4 (inidv/m3)") +
-  xlab("Year") +
-  theme(legend.title=element_blank()) # turns off legend title
+# Create summary dataframe
+SACCMayZoop1 <- SACCMayZoop %>%
+  mutate(STotCopepods = SSmNcristatus + SLgNcristatus + SSmNpflemingeri + SLgNpflemingeri + 
+           SSmEbungii + SLgEbungii + SSmCmarshallae + SLgCmarshallae + SSmCpacificus + SLgCpacificus + 
+           SSmMpacifica + SLgMpacifica + SSmMetridia + SLgMetridia + SMetridinidae + 
+           SPseudocalanus + SAcartia + SOithona + SCalanids) %>%
+  mutate(STotEuphausiids = SThysanoessa + SToculatum + SEuphJuv) %>%
+  mutate(STotOther = SCirripedia + SChaetnognatha + SNatantia + SCnidaria + SAmphipoda + 
+           SMysidacea + SOstracoda + SThecosomata + SAnomura + SBrachyura + SIchthyoplankton) %>%
+  select(Year, STotCopepods, SPodonidae, STotEuphausiids, STotOther)
+View(SACCMayZoop1)
+
+
+
+# Create copepod dataframe by species
+#STACCMayCopepods <- SACCMayZoop %>%
+#  mutate(SNcristatus = SSmNcristatus + SLgNcristatus) %>%
+#  mutate(SNpflemingeriAb = SSmNpflemingeri + SLgNpflemingeri) %>%
+#  mutate(SEbungii = SSmEbungii + SLgEbungii) %>%
+#  mutate(SCmarshallae = SSmCmarshallae + SLgCmarshallae) %>%
+#  mutate(SCpacificusAb = SSmCpacificusAb + SLgCpacificus) %>%
+#  mutate(SMpacificaAb = SSmMpacificaAb + SLgMpacifica) %>%
+#  mutate(SMetridia = SSmMetridia + SLgMetridia) %>%
+#  select(Year, SNcristatus, SNpflemingeri, SEbungii, SCmarshallae, SCpacificus, SMpacifica, SMetridia, SMetridinidae, SPseudocalanus, SAcartia, SOithona, SCalanids)
+#STACCMayCopepods = STACCMayCopepods %>%
+#  mutate(SACCTotCopepods = rowSums(STACCMayZoop[,2:13]))
+#View(STACCMayCopepods)
+
 
 
 # -----------------------------------------------------------------------------------
@@ -672,7 +968,7 @@ ACCMaySmZoAbund <- merge(ACCMaySmZoAbund,ASmScolecithricella,all.x=T)
 ACCMaySmZoAbund <- merge(ACCMaySmZoAbund,ASmMetridia,all.x=T)
 ACCMaySmZoAbund <- merge(ACCMaySmZoAbund,ASmMicrosetella,all.x=T)
 ACCMaySmZoAbund <- merge(ACCMaySmZoAbund,ASmNeocalanus,all.x=T)
-#ACCMaySmZoAbund <- merge(ACCMaySmZoAbund,ASmPodonidae,all.x=T) # Cladoceran
+ACCMaySmZoAbund <- merge(ACCMaySmZoAbund,ASmPodonidae,all.x=T)
 
 View(ACCMaySmZoAbund)
 
@@ -685,182 +981,182 @@ View(ACCMaySmZoAbund)
 
 # Copepod stage size / net classifications from Coyle & Pinchuk 2003:
 # Aetideidae, stages V, Adults
-AAetideidaeAb = MayACC %>%
+ALgAetideidae = MayACC %>%
   filter(family == "Aetideidae") %>%
   filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(AAetideidaeAbSite=sum(abundance)) %>%
+  summarise(AAetideidaeSite=sum(abundance)) %>%
   ungroup %>%
   group_by(Year) %>%
-  summarise(AAetideidaeAb=mean(AAetideidaeAbSite)) %>% 
+  summarise(ALgAetideidae=mean(AAetideidaeSite)) %>% 
   ungroup
 
 
 # Calanus marshallae, stages IV, V, adults
-ACmarshallaeAb = MayACC %>%
+ALgCmarshallae = MayACC %>%
   filter(sciName == "Calanus marshallae") %>% 
   filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(ACmarshallaeAbSite=sum(abundance)) %>%
+  summarise(ACmarshallaeSite=sum(abundance)) %>%
   ungroup %>%
   group_by(Year) %>%
-  summarise(ACmarshallaeAb=mean(ACmarshallaeAbSite)) %>%
+  summarise(ALgCmarshallae=mean(ACmarshallaeSite)) %>%
   ungroup
 
 
 # Calanus pacificus, stages V, adults
-ACpacificusAb = MayACC %>%
+ALgCpacificus = MayACC %>%
   filter(sciName == "Calanus pacificus") %>%
   filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(ACpacificusAbSite=sum(abundance)) %>% 
+  summarise(ACpacificusSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(ACpacificusAb=mean(ACpacificusAbSite)) %>% 
+  summarise(ALgCpacificus=mean(ACpacificusSite)) %>% 
   ungroup
 
 
 # Candacia, stages IV, V, adults
-ACandaciaAb = MayACC %>%
+ALgCandacia = MayACC %>%
   filter(genus == "Candacia") %>% 
   filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(ACandaciaAbSite=sum(abundance)) %>% 
+  summarise(ACandaciaSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(ACandaciaAb=mean(ACandaciaAbSite)) %>% 
+  summarise(ALgCandacia=mean(ACandaciaSite)) %>% 
   ungroup
 
 
 # Epilabidocera amphitrites, stages IV, V, adults;  add in Apr 30 sample from GAK2 in 2002 (cruiseID == hx258)
-AEamphitritesAb = MayACC %>%
+ALgEamphitrites = MayACC %>%
   filter(species == "Epilabidocera amphitrites") %>% 
   filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(AEamphitritesAbSite=sum(abundance)) %>% 
+  summarise(AEamphitritesSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(AEamphitritesAb=mean(AEamphitritesAbSite)) %>% 
+  summarise(ALgEamphitrites=mean(AEamphitritesSite)) %>% 
   ungroup
 
 
 # Eucalanus bungii, stages IV, V, adults
-AEbungiiAb = MayACC %>%
+ALgEbungii = MayACC %>%
   filter(sciName == "Eucalanus bungii") %>% 
   filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(AEbungiiAbSite=sum(abundance)) %>% 
+  summarise(AEbungiiSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(AEbungiiAb=mean(AEbungiiAbSite)) %>% 
+  summarise(ALgEbungii=mean(AEbungiiSite)) %>% 
   ungroup
 
 
 # Euchaeta elongata, stages III-V, adults
-APelongataAb = MayACC %>%
+ALgPelongata = MayACC %>%
   filter(species %in% c("Paraeuchaeta elongata", "Elongata")) %>% 
   filter(stage %in% c("III", "IV", "V", "C3", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(APelongataAbSite=sum(abundance)) %>% 
+  summarise(APelongataSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(APelongataAb=mean(APelongataAbSite)) %>% 
+  summarise(ALgPelongata=mean(APelongataSite)) %>% 
   ungroup
 
 
 # Heterorhabdus spp., stages IV, V, adults
-AHeterorhabdusAb = MayACC %>%
+ALgHeterorhabdus = MayACC %>%
   filter(genus == "Heterorhabdus") %>% 
   filter(stage %in% c("IV", "V", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(AHeterorhabdusAbSite=sum(abundance)) %>% 
+  summarise(AHeterorhabdusSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(AHeterorhabdusAb=mean(AHeterorhabdusAbSite)) %>% 
+  summarise(ALgHeterorhabdus=mean(AHeterorhabdusSite)) %>% 
   ungroup
 
 
 # Heterostylites spp., stages V, adults; none in May GAK samples
-AHeterostylitesAb = MayACC %>%
+ALgHeterostylites = MayACC %>%
   filter(genus == "Heterostylites") %>% 
   filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(AHeterostylitesAbSite=sum(abundance)) %>% 
+  summarise(AHeterostylitesSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(AHeterostylitesAb=mean(AHeterostylitesAbSite)) %>% 
+  summarise(ALgHeterostylites=mean(AHeterostylitesSite)) %>% 
   ungroup
 
 
 # Lucicutia spp., stages V, adults
-ALucicutiaAb = MayACC %>%
+ALgLucicutia = MayACC %>%
   filter(genus == "Lucicutia") %>% 
   filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(ALucicutiaAbSite=sum(abundance)) %>% 
+  summarise(ALucicutiaSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(ALucicutiaAb=mean(ALucicutiaAbSite)) %>% 
+  summarise(ALgLucicutia=mean(ALucicutiaSite)) %>% 
   ungroup
 
 
 # Metridia okhotensis, stages V, adults
-AMokhotensisAb = MayACC %>%
+ALgMokhotensis = MayACC %>%
   filter(sciName == "Metridia okhotensis") %>% 
   filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(AMokhotensisAbSite=sum(abundance)) %>% 
+  summarise(AMokhotensisSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(AMokhotensisAb=mean(AMokhotensisAbSite)) %>% 
+  summarise(ALgMokhotensis=mean(AMokhotensisSite)) %>% 
   ungroup
 
 
 # Metridia pacifica, stages Females
-AMpacificaAb = MayACC %>%
+ALgMpacifica = MayACC %>%
   filter(sciName == "Metridia pacifica") %>% 
   filter(stage == "AF") %>%
   group_by(Year, stationID) %>%
-  summarise(AMpacificaAbSite=sum(abundance)) %>% 
+  summarise(AMpacificaSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(AMpacificaAb=mean(AMpacificaAbSite)) %>% 
+  summarise(ALgMpacifica=mean(AMpacificaSite)) %>% 
   ungroup
 
 
 # Neocalanus cristatus, stages III-V, adults
-ANcristatusAb = MayACC %>%
+ALgNcristatus = MayACC %>%
   filter(sciName == "Neocalanus cristatus") %>% 
   filter(stage %in% c("III", "IV", "V", "C3", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(ANcristatusAbSite=sum(abundance)) %>% 
+  summarise(ANcristatusSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(ANcristatusAb=mean(ANcristatusAbSite)) %>% 
+  summarise(ALgNcristatus=mean(ANcristatusSite)) %>% 
   ungroup
 
 
 # Neocalanus plumchrus-flemingeri, stages IV, V, adults
-ANpflemingeriAb = MayACC %>%
+ALgNpflemingeri = MayACC %>%
   filter(sciName %in% c("Neocalanus plumchrus", "Neocalanus flemingeri")) %>% 
   filter(stage %in% c("IV", "V", "C4", "C5", "CV_large", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(ANpflemingeriAbSite=sum(abundance)) %>% 
+  summarise(ANpflemingeriSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(ANpflemingeriAb=mean(ANpflemingeriAbSite)) %>% 
+  summarise(ALgNpflemingeri=mean(ANpflemingeriSite)) %>% 
   ungroup
 
 
 # Pleuromamma spp., stages V, adults 
-APleuromammaAb = MayACC %>%
+ALgPleuromamma = MayACC %>%
   filter(genus == "Pleuromamma") %>% 
   filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(APleuromammaAbSite=sum(abundance)) %>% 
+  summarise(APleuromammaSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(APleuromammaAb=mean(APleuromammaAbSite)) %>% 
+  summarise(ALgPleuromamma=mean(APleuromammaSite)) %>% 
   ungroup
 
 # -----------------------
@@ -869,27 +1165,27 @@ APleuromammaAb = MayACC %>%
 
 # Gaussia princeps   Follow Coyle & Pinchuk's classification for congenors Pleuromamma & Metridia
 # None in GAK May samples
-AGprincepsAb = MayACC %>%
+ALgGprinceps = MayACC %>%
   filter(sciName == "Gaussia princeps") %>%
   filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(AGprincepsAbSite=sum(abundance)) %>% 
+  summarise(AGprincepsSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(AGprincepsAb=mean(AGprincepsAbSite)) %>% 
+  summarise(ALgGprinceps=mean(AGprincepsSite)) %>% 
   ungroup
 
 
 # Metridia sp. Follow Coyle & Pinchuk's 2003 classification for M. okhotensis
 # ie take stages V, adults from large nets
-AMetridiaAb = MayACC %>%
+ALgMetridia = MayACC %>%
   filter(sciName == "Metridia") %>%
   filter(stage %in% c("V", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(AMetridiaAbSite=sum(abundance)) %>% 
+  summarise(AMetridiaSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(AMetridiaAb=mean(AMetridiaAbSite)) %>% 
+  summarise(ALgMetridia=mean(AMetridiaSite)) %>% 
   ungroup
 
 
@@ -898,16 +1194,45 @@ AMetridiaAb = MayACC %>%
 
 # Neocalanus sp.  Follow Coyle & Pinchuk's 2003 classification for N. cristatus
 # ie take III-V, adults from large nets
-ANeocalanusAb = MayACC %>%
+ALgNeocalanus = MayACC %>%
   filter(sciName == "Neocalanus") %>% 
   filter(stage %in% c("III", "IV", "V", "C3", "C4", "C5", "AF", "AM")) %>%
   group_by(Year, stationID) %>%
-  summarise(ANeocalanusAbSite=sum(abundance)) %>% 
+  summarise(ANeocalanusSite=sum(abundance)) %>% 
   ungroup %>%
   group_by(Year) %>%
-  summarise(ANeocalanusAb=mean(ANeocalanusAbSite)) %>% 
+  summarise(ALgNeocalanus=mean(ANeocalanusSite)) %>% 
   ungroup
 
+# -----------------------
+
+# Euphausiids, all stages
+AEuphausiids = MayACC %>%
+  filter(order == "Euphausiacea") %>% 
+  group_by(Year, stationID) %>%
+  summarise(EuphausiidsSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(AEuphausiids=mean(EuphausiidsSite)) %>% 
+  ungroup
+#View(AEuphausiids)
+
+# -----------------------
+
+# "Other" category (everything in the large net that is not a Copepod nor Euphausiid; 
+# includes Mysids, Pteropods, Decapod zoea, Ichthyoplankton, Cnidaria, Amphipods, Chaetnognaths)
+
+AOther = MayACC %>%
+  filter(subclass != "Copepoda") %>% # exclude Copepods
+  filter(order != "Euphausiacea") %>% # exclude Euphausiids
+  #filter(!subphylum == "Vertebrata" & !stage %in% c("juvenile", "juveniles")) %>% # exclude juvenile fish (but retain fish eggs & larvae)
+  group_by(Year, stationID) %>%
+  summarise(OtherSite=sum(biomass)) %>% 
+  ungroup %>%
+  group_by(Year) %>%
+  summarise(AOther=mean(OtherSite)) %>% 
+  ungroup
+View(AOther)
 
 # -----------------------
 
@@ -915,26 +1240,29 @@ ANeocalanusAb = MayACC %>%
 ACCMayLgZoAbund=data.frame('Year'=c(1998:2010))
 
 # Merge in the taxon-specific abundance data
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,AAetideidaeAb,all.x=T)
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ACmarshallaeAb,all.x=T)
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ACpacificusAb,all.x=T)
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ACandaciaAb,all.x=T)
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,AEamphitritesAb,all.x=T)
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,AEbungiiAb,all.x=T)
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,APelongataAb,all.x=T)
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,AHeterorhabdusAb,all.x=T)
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,AHeterostylitesAb,all.x=T)
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALucicutiaAb,all.x=T)
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,AMokhotensisAb,all.x=T)
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,AMpacificaAb,all.x=T)
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ANcristatusAb,all.x=T)
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ANpflemingeriAb,all.x=T)
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,APleuromammaAb,all.x=T)
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,AGprincepsAb,all.x=T)
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,AMetridiaAb,all.x=T)
-ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ANeocalanusAb,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgAetideidae,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgCmarshallae,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgCpacificus,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgCandacia,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgEamphitrites,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgEbungii,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgPelongata,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgHeterorhabdus,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgHeterostylites,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgLucicutia,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgMokhotensis,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgMpacifica,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgNcristatus,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgNpflemingeri,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgPleuromamma,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgGprinceps,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgMetridia,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,ALgNeocalanus,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,AEuphausiids,all.x=T)
+ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,AOther,all.x=T)
 
 View(ACCMayLgZoAbund)
+
 
 # -----------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------
@@ -942,15 +1270,30 @@ View(ACCMayLgZoAbund)
 
 
 # Merge Small & Large Zooplankton abundance datasets
-ACCMayZoop = full_join(ACCMaySmZoAbund, ACCMayLgZoAbund, by = "Year")
-ACCMayZoop[is.na(ACCMayZoop)] <- 0 # replace NA with 0
-str(ACCMayZoop)
-View(ACCMayZoop)
+AACCMayZoop = full_join(ACCMaySmZoAbund, ACCMayLgZoAbund, by = "Year")
+AACCMayZoop[is.na(ACCMayZoop)] <- 0 # replace NA with 0
+str(AACCMayZoop)
+View(AACCMayZoop)
+names(AACCMayZoop)
 
 # Calculate May Total Copepod Abundance for GAK1-4 sites
-TACCMayZoop = ACCMayZoop %>%
-  mutate(ACCTotCopepods = rowSums(ACCMayZoop[,2:47]))
-View(TACCMayZoop)
+#TACCMayZoop = ACCMayZoop %>%
+#  mutate(ACCTotCopepods = rowSums(ACCMayZoop[,2:47]))
+#View(TACCMayZoop)
+
+
+# Create summary dataframe for GAK1-4 sites
+AACCMayZoop1 <- AACCMayZoop %>%
+  mutate(ATotCopepods = ASmAcartia + ASmAetideidae + ASmCmarshallae + ASmCpacificus + ASmCcolumbiae + ASmCabdominalis + 
+           ASmClausocalanus + ASmEamphitrites + ASmEbungii + ASmPelongata + ASmEurytemora + ASmHeterorhabdus + ASmLucicutia + 
+           ASmMesocalanus + ASmMokhotensis + ASmMpacifica + ASmMicrocalanus + ASmNcristatus + ASmNpflemingeri + ASmOithona + 
+           ASmOncaea + ASmParacalanus + ASmPseudocalanus + ASmRantacrticus + ASmScolecithricella + ASmMetridia + ASmMicrosetella + 
+           ASmNeocalanus + ALgAetideidae + ALgCmarshallae + ALgCpacificus + ALgCandacia + ALgEamphitrites + ALgEbungii + ALgPelongata + 
+           ALgHeterorhabdus + ALgHeterostylites + ALgLucicutia + ALgMokhotensis + ALgMpacifica + ALgNcristatus + ALgNpflemingeri + 
+           ALgPleuromamma + ALgGprinceps + ALgMetridia + ALgNeocalanus) %>%
+  rename(APodonidae = ASmPodonidae, ATotEuphausiids = AEuphausiids, ATotOther = AOther) %>%
+  select(Year, ATotCopepods, APodonidae, ATotEuphausiids, ATotOther)
+View(AACCMayZoop1)
 
 
 # -----------------------------------------------------------------------------------
@@ -960,42 +1303,100 @@ View(TACCMayZoop)
 # Using abundance data from Seward Line (where all zooplankton species were sampled),
 # Is the subset of copepod species sampled at Shelikof Strait representative of total copepod abundance?
 
-totals = full_join(TACCMayZoop, STACCMayZoop, by = "Year") %>%
-  select(Year, ACCTotCopepods, SACCTotCopepods)
+totals = full_join(SACCMayZoop1, AACCMayZoop1, by = "Year")#S prefix indicates subset sampled at Line 8; A prefix indicicates total zoop sampled at Seward Line
 View(totals)
+names(totals)
 
 # Plot time series
 ggplot(data=totals, aes(x=Year, y = value, color = variable)) + 
-  geom_point(aes(y = ACCTotCopepods, col = "Total Copepod Abundance")) +
-  geom_point(aes(y = SACCTotCopepods, col = "Subset Copepod Abundance")) +
-  geom_line(aes(y = ACCTotCopepods, col = "Total Copepod Abundance")) +
-  geom_line(aes(y = SACCTotCopepods, col = "Subset Copepod Abundance")) +
+  geom_point(aes(y = ATotCopepods, col = "Total Copepod Abundance")) +
+  geom_point(aes(y = STotCopepods, col = "Subset Copepod Abundance")) +
+  geom_line(aes(y = ATotCopepods, col = "Total Copepod Abundance")) +
+  geom_line(aes(y = STotCopepods, col = "Subset Copepod Abundance")) +
   theme_bw() +
   scale_y_log10() +
   coord_cartesian(xlim = c(1996, 2012)) +
   ylab("Abundance (inidv / m3)") +
   xlab("Year") +
   theme(legend.title=element_blank()) # turns off legend title
-ggsave("TimeSeries.png", width = 8, height = 5)
+#ggsave("CopepodTimeSeries.png", width = 8, height = 5)
+
+# Euphausiids
+ggplot(data=totals, aes(x=Year, y = value, color = variable)) + 
+  geom_point(aes(y = ATotEuphausiids, col = "Total Euphausiid Abundance")) +
+  geom_point(aes(y = STotEuphausiids, col = "Subset Euphausiid Abundance")) +
+  geom_line(aes(y = ATotEuphausiids, col = "Total Euphausiid Abundance")) +
+  geom_line(aes(y = STotEuphausiids, col = "Subset Euphausiid Abundance")) +
+  theme_bw() +
+  scale_y_log10() +
+  coord_cartesian(xlim = c(1996, 2012)) +
+  ylab("Abundance (inidv / m3)") +
+  xlab("Year") +
+  theme(legend.title=element_blank()) # turns off legend title
+#ggsave("EuphausiidTimeSeries.png", width = 8, height = 5)
 
 
-# Are the subset and totals correlated?
-cor.test(log(totals$ACCTotCopepods), log(totals$SACCTotCopepods))
-#t = 5.6906, df = 11, p-value = 0.0001401
+# Other Stuff
+ggplot(data=totals, aes(x=Year, y = value, color = variable)) + 
+  geom_point(aes(y = ATotOther, col = "Total Other Abundance")) +
+  geom_point(aes(y = STotOther, col = "Subset Other Abundance")) +
+  geom_line(aes(y = ATotOther, col = "Total Other Abundance")) +
+  geom_line(aes(y = STotOther, col = "Subset Other Abundance")) +
+  theme_bw() +
+  scale_y_log10() +
+  coord_cartesian(xlim = c(1996, 2012)) +
+  ylab("Abundance (inidv / m3)") +
+  xlab("Year") +
+  theme(legend.title=element_blank()) # turns off legend title
+
+
+# Total Zooplankton
+ggplot(data=totals, aes(x=Year, y = value, color = variable)) + 
+  geom_point(aes(y = ATotCopepods + APodonidae + ATotEuphausiids + ATotOther, col = "Total Zooplankton Abundance")) +
+  geom_point(aes(y = STotCopepods + SPodonidae + STotEuphausiids + STotOther, col = "Subset Zooplankton Abundance")) +
+  geom_line(aes(y = ATotCopepods + APodonidae + ATotEuphausiids + ATotOther, col = "Total Zooplankton Abundance")) +
+  geom_line(aes(y = STotCopepods + SPodonidae + STotEuphausiids + STotOther, col = "Subset Zooplankton Abundance")) +
+  theme_bw() +
+  scale_y_log10() +
+  coord_cartesian(xlim = c(1996, 2012)) +
+  ylab("Abundance (inidv / m3)") +
+  xlab("Year") +
+  theme(legend.title=element_blank()) # turns off legend title
+
+
+# Copepods: Are the subset and totals correlated?
+cor.test(log(totals$ATotCopepods), log(totals$STotCopepods))
+#Pearson's product-moment correlation
+#data:  log(totals$ATotCopepods) and log(totals$STotCopepods)
+#t = 17.323, df = 11, p-value = 2.481e-09
 #alternative hypothesis: true correlation is not equal to 0
 #95 percent confidence interval:
-#  0.5973415 0.9586196
+#0.9397033 0.9948029
 #sample estimates:
-#  cor 
-#0.8639711 
+#cor 
+#0.9821618 
+
+
+# Euphausiids: Are the subset and totals correlated?
+cor.test(log(totals$ATotEuphausiids), log(totals$STotEuphausiids))
+#Pearson's product-moment correlation
+#data:  log(totals$ATotEuphausiids) and log(totals$STotEuphausiids)
+#t = 2.3889, df = 11, p-value = 0.03593
+#alternative hypothesis: true correlation is not equal to 0
+#95 percent confidence interval:
+#0.0493697 0.8588644
+#sample estimates:
+#cor 
+#0.5844566
+
 
 # Plot correlation
 ggplot(data=totals) + 
-  geom_point(aes(x = ACCTotCopepods, y = SACCTotCopepods, size = 6)) +
+  geom_point(aes(x = ATotCopepods, y = STotCopepods, size = 6)) +
   theme_bw() +
   scale_y_log10() +
   scale_x_log10() +
-  coord_cartesian(ylim = c(100, 2200)) +
+  #coord_cartesian(ylim = c(100, 2200)) +
   ylab("Subset Copepod Abundance (inidv / m3)") +
   xlab("Total Copepod Abundance (indiv / m3)") 
-ggsave("Correlation.png", width = 6, height = 5)
+#ggsave("CopepodCorrelation.png", width = 6, height = 5)
