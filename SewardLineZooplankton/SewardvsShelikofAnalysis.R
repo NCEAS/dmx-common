@@ -13,7 +13,7 @@
 # Create small zooplankton (from 150um mesh CalVET net)
 # Extract Seward Line (GAK) sites from Small Zoop file
 May.s = SCZo1 %>%
-  filter(stationID %in% c("GAK1", "GAK2", "GAK3", "GAK4")) %>%
+  filter(stationID %in% c("GAK1", "GAK2", "GAK3", "GAK4", "GAK5", "GAK6", "GAK7", "GAK8", "GAK9", "GAK10", "GAK11", "GAK12", "GAK13")) %>%
   filter(Month == 5)
 
 
@@ -280,7 +280,7 @@ SmUnidCalanids = May.s %>%
   group_by(Year, stationID) %>%
   summarise(SmUnidCalanids=sum(abundance)) %>% 
   ungroup
-View(SmUnidCalanids)
+#View(SmUnidCalanids)
 
 
 # -----------------------
@@ -299,11 +299,20 @@ SmPodonidae = May.s %>%
 # ----------------
 
 # Create dataframe with years; please excuse the ugly code
-Year <- c(1998:2010, 1998:2010, 1998:2010, 1998:2010)
+Year <- c(1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010)
 stationID <- c("GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1",
                "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", 
                "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", 
-               "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4")
+               "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4",
+               "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", 
+               "GAK6", "GAK6", "GAK6", "GAK6", "GAK6", "GAK6", "GAK6", "GAK6", "GAK6", "GAK6", "GAK6", "GAK6", "GAK6",
+               "GAK7", "GAK7", "GAK7", "GAK7", "GAK7", "GAK7", "GAK7", "GAK7", "GAK7", "GAK7", "GAK7", "GAK7", "GAK7",
+               "GAK8", "GAK8", "GAK8", "GAK8", "GAK8", "GAK8", "GAK8", "GAK8", "GAK8", "GAK8", "GAK8", "GAK8", "GAK8",
+               "GAK9", "GAK9", "GAK9", "GAK9", "GAK9", "GAK9", "GAK9", "GAK9", "GAK9", "GAK9", "GAK9", "GAK9", "GAK9",
+               "GAK10", "GAK10", "GAK10", "GAK10", "GAK10", "GAK10", "GAK10", "GAK10", "GAK10", "GAK10", "GAK10", "GAK10", "GAK10",
+               "GAK11", "GAK11", "GAK11", "GAK11", "GAK11", "GAK11", "GAK11", "GAK11", "GAK11", "GAK11", "GAK11", "GAK11", "GAK11",
+               "GAK12", "GAK12", "GAK12", "GAK12", "GAK12", "GAK12", "GAK12", "GAK12", "GAK12", "GAK12", "GAK12", "GAK12", "GAK12",
+               "GAK13", "GAK13", "GAK13", "GAK13", "GAK13", "GAK13", "GAK13", "GAK13", "GAK13", "GAK13", "GAK13", "GAK13", "GAK13")
 ACCMaySmZoAbund <- data.frame(Year, stationID)
 #View(ACCMaySmZoAbund)
 str(ACCMaySmZoAbund)
@@ -353,7 +362,7 @@ ACCMaySmZoAbund <- merge(ACCMaySmZoAbund,SmPodonidae,all.x=T)
 
 # Extract Seward Line (GAK) sites from Large Zoop file
 MayACC = DepthInt.taxinfo %>%
-  filter(stationID %in% c("GAK1", "GAK2", "GAK3", "GAK4")) %>%
+  filter(stationID %in% c("GAK1", "GAK2", "GAK3", "GAK4", "GAK5", "GAK6", "GAK7", "GAK8", "GAK9", "GAK10", "GAK11", "GAK12", "GAK13")) %>%
   filter(Month == 5)
 str(MayACC)
 
@@ -679,11 +688,20 @@ SIchthyoplankton = MayACC %>%
 # -----------------------
 
 # Create dataframe with years, please excuse the ugly code
-Year <- c(1998:2010, 1998:2010, 1998:2010, 1998:2010)
+Year <- c(1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010)
 stationID <- c("GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1",
                "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", 
                "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", 
-               "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4")
+               "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4", "GAK4",
+               "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", "GAK5", 
+               "GAK6", "GAK6", "GAK6", "GAK6", "GAK6", "GAK6", "GAK6", "GAK6", "GAK6", "GAK6", "GAK6", "GAK6", "GAK6",
+               "GAK7", "GAK7", "GAK7", "GAK7", "GAK7", "GAK7", "GAK7", "GAK7", "GAK7", "GAK7", "GAK7", "GAK7", "GAK7",
+               "GAK8", "GAK8", "GAK8", "GAK8", "GAK8", "GAK8", "GAK8", "GAK8", "GAK8", "GAK8", "GAK8", "GAK8", "GAK8",
+               "GAK9", "GAK9", "GAK9", "GAK9", "GAK9", "GAK9", "GAK9", "GAK9", "GAK9", "GAK9", "GAK9", "GAK9", "GAK9",
+               "GAK10", "GAK10", "GAK10", "GAK10", "GAK10", "GAK10", "GAK10", "GAK10", "GAK10", "GAK10", "GAK10", "GAK10", "GAK10",
+               "GAK11", "GAK11", "GAK11", "GAK11", "GAK11", "GAK11", "GAK11", "GAK11", "GAK11", "GAK11", "GAK11", "GAK11", "GAK11",
+               "GAK12", "GAK12", "GAK12", "GAK12", "GAK12", "GAK12", "GAK12", "GAK12", "GAK12", "GAK12", "GAK12", "GAK12", "GAK12",
+               "GAK13", "GAK13", "GAK13", "GAK13", "GAK13", "GAK13", "GAK13", "GAK13", "GAK13", "GAK13", "GAK13", "GAK13", "GAK13")
 ACCMayLgZoAbund <- data.frame(Year, stationID)
 
 # Merge in the taxon-specific abundance data
@@ -722,7 +740,7 @@ ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,SAnomura,all.x=T)
 ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,SBrachyura,all.x=T)
 ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,SIchthyoplankton,all.x=T)
 
-#View(ACCMayLgZoAbund)
+View(ACCMayLgZoAbund)
 
 
 #####################################################################################
@@ -853,10 +871,10 @@ theme_boxplot <- function(base_size = 12){
 
 # Total Zooplankton
 ggplot(data=totalZoop, aes(x=Year, y = value)) + 
-  geom_point(aes(y = totalAll), col = rgb(155, 255, 255, maxColorValue=255), size=2) + # LTOP
-  geom_point(aes(y = totalSubset), col = rgb(107, 107, 255, maxColorValue = 255), size=2) + # subset sampeld by FOCI
-  geom_line(aes(y = totalAll), col = rgb(155, 255, 255, maxColorValue=255), size=2) + # LTOP
-  geom_line(aes(y = totalSubset), col = rgb(107, 107, 255, maxColorValue = 255), size=2) + # subset sampeld by FOCI
+  geom_point(aes(y = totalAll), col = rgb(155, 255, 255, maxColorValue=255), size=3) + # LTOP
+  geom_point(aes(y = totalSubset), col = rgb(107, 107, 255, maxColorValue = 255), size=3) + # subset sampeld by FOCI
+  geom_line(aes(y = totalAll), col = rgb(155, 255, 255, maxColorValue=255), size=3) + # LTOP
+  geom_line(aes(y = totalSubset), col = rgb(107, 107, 255, maxColorValue = 255), size=3) + # subset sampeld by FOCI
   theme_boxplot() +
   theme(axis.line=element_line('black'),
         panel.grid.major = element_blank(),
@@ -864,7 +882,9 @@ ggplot(data=totalZoop, aes(x=Year, y = value)) +
         panel.border = element_blank(),
         panel.background = element_blank())+
   scale_y_log10() +
+  coord_cartesian(ylim = c(350, 11000)) +
   theme(axis.text.x = element_text(angle=90))+
+  theme(axis.text.y = element_text(size=22))+
   scale_x_continuous(breaks=c(seq(1996,2012,2)), labels=c(seq(1996,2012,2))) +
   ylab("Mean Abundance, Total Zooplankton (inidv / m3)") +
   xlab("Year") #+
@@ -953,6 +973,7 @@ cor.test(log(totals$ATotCopepods), log(totals$STotCopepods))
 
 # Euphausiids: Are the subset and totals correlated?
 cor.test(log(totals$ATotEuphausiids), log(totals$STotEuphausiids))
+# For GAK1-4:
 # Pearson's product-moment correlation
 # data:  log(totals$ATotEuphausiids) and log(totals$STotEuphausiids)
 # t = 4.3503, df = 11, p-value = 0.001155
@@ -964,8 +985,21 @@ cor.test(log(totals$ATotEuphausiids), log(totals$STotEuphausiids))
 # 0.7952458
 
 
+# For GAK1-13:
+# Pearson's product-moment correlation
+# t = 6.5872, df = 11, p-value = 3.931e-05
+# alternative hypothesis: true correlation is not equal to 0
+# 95 percent confidence interval:
+# 0.6737716 0.9678542
+# sample estimates:
+# cor 
+# 0.8931759 
+
+
+
 # Other Zooplankton: Are the subset and totals correlated?
 cor.test(log(totals$ATotOther), log(totals$STotOther))
+# For GAK1-4:
 # Pearson's product-moment correlation
 # data:  log(totals$ATotOther) and log(totals$STotOther)
 # t = 2.5378, df = 11, p-value = 0.02759
@@ -975,4 +1009,16 @@ cor.test(log(totals$ATotOther), log(totals$STotOther))
 # sample estimates:
 # cor 
 # 0.6076809
+
+# For GAK1-13:
+# Pearson's product-moment correlation
+# data:  log(totals$ATotOther) and log(totals$STotOther)
+# t = 4.8469, df = 11, p-value = 0.0005133
+# alternative hypothesis: true correlation is not equal to 0
+# 95 percent confidence interval:
+# 0.5030388 0.9460717
+# sample estimates:
+# cor 
+# 0.8252829 
+
 
