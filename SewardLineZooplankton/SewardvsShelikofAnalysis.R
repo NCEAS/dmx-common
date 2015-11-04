@@ -9,6 +9,7 @@
 # Run SewardLineLgZoopProcessingScript up to line 54
 
 
+
 # Create small zooplankton (from 150um mesh CalVET net)
 # Extract Seward Line (GAK) sites from Small Zoop file
 May.s = SCZo1 %>%
@@ -341,7 +342,7 @@ ACCMaySmZoAbund <- merge(ACCMaySmZoAbund,SmNeocalanus,all.x=T)
 ACCMaySmZoAbund <- merge(ACCMaySmZoAbund,SmUnidCalanids,all.x=T)
 ACCMaySmZoAbund <- merge(ACCMaySmZoAbund,SmPodonidae,all.x=T)
 
-View(ACCMaySmZoAbund)
+#View(ACCMaySmZoAbund)
 
 
 #####################################################################################
@@ -721,7 +722,7 @@ ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,SAnomura,all.x=T)
 ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,SBrachyura,all.x=T)
 ACCMayLgZoAbund <- merge(ACCMayLgZoAbund,SIchthyoplankton,all.x=T)
 
-View(ACCMayLgZoAbund)
+#View(ACCMayLgZoAbund)
 
 
 #####################################################################################
@@ -734,7 +735,7 @@ View(ACCMayLgZoAbund)
 ACCMayZoop <- full_join(ACCMaySmZoAbund, ACCMayLgZoAbund, by = c("Year", "stationID"))
 ACCMayZoop[is.na(ACCMayZoop)] <- 0 # replace NA with 0
 str(ACCMayZoop)
-View(ACCMayZoop)
+#View(ACCMayZoop)
 names(ACCMayZoop)
 
 #########################################
@@ -751,7 +752,7 @@ ACCMayZoop1 <- ACCMayZoop %>%
   rename(APodonidae = SmPodonidae, ATotEuphausiids = Euphausiids) %>%
   mutate(ATotOther = Other + SIchthyoplankton) %>%
   select(Year, stationID, ATotCopepods, APodonidae, ATotEuphausiids, ATotOther)
-View(ACCMayZoop1)
+#View(ACCMayZoop1)
 
 # Calculate annual means across all 4 sites, for all taxa collected at GAK1-4 sites
 AnnualMeansAll = ACCMayZoop1 %>%
@@ -759,7 +760,7 @@ AnnualMeansAll = ACCMayZoop1 %>%
   summarise_each(funs(mean)) %>% # warning message is not a problem (indicates that it's not possible to find means of stationID)
   ungroup %>%
   select(Year, ATotCopepods, APodonidae, ATotEuphausiids, ATotOther)
-View(AnnualMeansAll)
+#View(AnnualMeansAll)
 
 
 #########################################
@@ -775,7 +776,7 @@ SubsetACCMayZoop <- ACCMayZoop %>%
   mutate(STotOther = SCirripedia + SChaetnognatha + SNatantia + SCnidaria + SAmphipoda + 
            SMysidacea + SOstracoda + SThecosomata + SAnomura + SBrachyura + SIchthyoplankton) %>%
   select(Year, stationID, STotCopepods, SPodonidae, STotEuphausiids, STotOther)
-View(SubsetACCMayZoop)
+#View(SubsetACCMayZoop)
 
 # Calculate annual means across all 4 sites, for all taxa collected at GAK1-4 sites
 AnnualMeansSubset = SubsetACCMayZoop %>%
@@ -783,7 +784,7 @@ AnnualMeansSubset = SubsetACCMayZoop %>%
   summarise_each(funs(mean)) %>% # warning message is not a problem (indicates that it's not possible to find means of stationID)
   ungroup %>%
   select(Year, STotCopepods, SPodonidae, STotEuphausiids, STotOther)
-View(AnnualMeansSubset)
+#View(AnnualMeansSubset)
 
 
 #####################################################################################
@@ -821,22 +822,54 @@ cor.test(log(totalZoop$totalAll), log(totalZoop$totalSubset))
 # cor 
 # 0.9864184 
 
+
+
 # Plot time series
+
+library(grid)
+library(scales)
+
+# Load Rachael's plot theme:
+theme_boxplot <- function(base_size = 12){
+  theme_bw(base_size) %+replace%
+    theme(legend.key.size=unit(15,"points"),
+          legend.text=element_text(size=I(13)),
+          legend.key=element_blank(),
+          legend.title=element_blank(),
+          legend.position="none",
+          plot.margin=unit(c(0.25,2,0.25,2), "lines"), # respectively: top, right, bottom, left; refers to margin *outside* labels; default is c(1,1,0.5,0.5)
+          panel.border=element_rect(colour='black', fill = NA),
+          panel.margin=unit(0,"lines"),
+          axis.ticks.length=unit(1,"mm"),
+          axis.ticks.margin = unit(0, "lines"),
+          axis.text=element_text(size=15),
+          axis.title.x=element_text(hjust=.55, vjust=-.01, size=17),
+          axis.title.y=element_text(size=17, angle=90, hjust=.56, vjust=-.001),
+          panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),
+          strip.text.x=element_text(size=14),
+          strip.background=element_rect(colour='black', fill='white'))
+} 
+
 # Total Zooplankton
-ggplot(data=totalZoop, aes(x=Year, y = value, color = variable)) + 
-  geom_point(aes(y = totalAll, col = "Total Zooplankton Abundance")) +
-  geom_point(aes(y = totalSubset, col = "Subset Zooplankton Abundance")) +
-  geom_line(aes(y = totalAll, col = "Total Zooplankton Abundance")) +
-  geom_line(aes(y = totalSubset, col = "Subset Zooplankton Abundance")) +
-  theme_bw() +
+ggplot(data=totalZoop, aes(x=Year, y = value)) + 
+  geom_point(aes(y = totalAll), col = rgb(155, 255, 255, maxColorValue=255), size=2) + # LTOP
+  geom_point(aes(y = totalSubset), col = rgb(107, 107, 255, maxColorValue = 255), size=2) + # subset sampeld by FOCI
+  geom_line(aes(y = totalAll), col = rgb(155, 255, 255, maxColorValue=255), size=2) + # LTOP
+  geom_line(aes(y = totalSubset), col = rgb(107, 107, 255, maxColorValue = 255), size=2) + # subset sampeld by FOCI
+  theme_boxplot() +
+  theme(axis.line=element_line('black'),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank())+
   scale_y_log10() +
-  coord_cartesian(xlim = c(1996, 2012)) +
-  ylab("Abundance (inidv / m3)") +
-  xlab("Year") +
-  theme(legend.title=element_blank()) # turns off legend title
-ggsave("TotalZoopTimeSeries.png", width = 8, height = 5)
-
-
+  theme(axis.text.x = element_text(angle=90))+
+  scale_x_continuous(breaks=c(seq(1996,2012,2)), labels=c(seq(1996,2012,2))) +
+  ylab("Mean Abundance, Total Zooplankton (inidv / m3)") +
+  xlab("Year") #+
+#theme(legend.title=element_blank()) # turns off legend title
+#ggsave("TotalZoopTimeSeries.png", width = 8, height = 5)
 
 
 ############################
@@ -844,42 +877,62 @@ ggsave("TotalZoopTimeSeries.png", width = 8, height = 5)
 
 # Copepods
 ggplot(data=totals, aes(x=Year, y = value, color = variable)) + 
-  geom_point(aes(y = ATotCopepods, col = "Total Copepod Abundance")) +
-  geom_point(aes(y = STotCopepods, col = "Subset Copepod Abundance")) +
-  geom_line(aes(y = ATotCopepods, col = "Total Copepod Abundance")) +
-  geom_line(aes(y = STotCopepods, col = "Subset Copepod Abundance")) +
-  theme_bw() +
+  geom_point(aes(y = ATotCopepods), col = rgb(155, 255, 255, maxColorValue=255), size=2) + # LTOP
+  geom_point(aes(y = STotCopepods), col = rgb(107, 107, 255, maxColorValue = 255), size=2) + # subset sampeld by FOCI
+  geom_line(aes(y = ATotCopepods), col = rgb(155, 255, 255, maxColorValue=255), size=2) + # LTOP
+  geom_line(aes(y = STotCopepods), col = rgb(107, 107, 255, maxColorValue = 255), size=2) + # subset sampeld by FOCI
+  theme_boxplot() +
+  theme(axis.line=element_line('black'),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank())+
   scale_y_log10() +
-  coord_cartesian(xlim = c(1996, 2012)) +
-  ylab("Abundance (inidv / m3)") +
+  theme(axis.text.x = element_text(angle=90))+
+  scale_x_continuous(breaks=c(seq(1996,2012,2)), labels=c(seq(1996,2012,2))) +
+  ylab("Mean Copepod Abundance (inidv / m3)") +
   xlab("Year") +
   theme(legend.title=element_blank()) # turns off legend title
 #ggsave("CopepodTimeSeries.png", width = 8, height = 5)
 
+
 # Euphausiids
 ggplot(data=totals, aes(x=Year, y = value, color = variable)) + 
-  geom_point(aes(y = ATotEuphausiids, col = "Total Euphausiid Abundance")) +
-  geom_point(aes(y = STotEuphausiids, col = "Subset Euphausiid Abundance")) +
-  geom_line(aes(y = ATotEuphausiids, col = "Total Euphausiid Abundance")) +
-  geom_line(aes(y = STotEuphausiids, col = "Subset Euphausiid Abundance")) +
-  theme_bw() +
+  geom_point(aes(y = ATotEuphausiids), col = rgb(155, 255, 255, maxColorValue=255), size=2) + # LTOP
+  geom_point(aes(y = STotEuphausiids), col = rgb(107, 107, 255, maxColorValue = 255), size=2) + # subset sampeld by FOCI
+  geom_line(aes(y = ATotEuphausiids), col = rgb(155, 255, 255, maxColorValue=255), size=2) + # LTOP
+  geom_line(aes(y = STotEuphausiids), col = rgb(107, 107, 255, maxColorValue = 255), size=2) + # subset sampeld by FOCI
+  theme_boxplot() +
+  theme(axis.line=element_line('black'),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank())+
   scale_y_log10() +
-  coord_cartesian(xlim = c(1996, 2012)) +
-  ylab("Abundance (inidv / m3)") +
-  xlab("Year") +
-  theme(legend.title=element_blank()) # turns off legend title
+  theme(axis.text.x = element_text(angle=90))+
+  scale_x_continuous(breaks=c(seq(1996,2012,2)), labels=c(seq(1996,2012,2))) +
+  ylab("Mean Euphausiid Abundance (inidv / m3)") +
+  xlab("Year") #+
+  #theme(legend.title=element_blank()) # turns off legend title
 #ggsave("EuphausiidTimeSeries.png", width = 8, height = 5)
+
 
 # Other Stuff
 ggplot(data=totals, aes(x=Year, y = value, color = variable)) + 
-  geom_point(aes(y = ATotOther, col = "Total Other Abundance")) +
-  geom_point(aes(y = STotOther, col = "Subset Other Abundance")) +
-  geom_line(aes(y = ATotOther, col = "Total Other Abundance")) +
-  geom_line(aes(y = STotOther, col = "Subset Other Abundance")) +
-  theme_bw() +
+  geom_point(aes(y = ATotOther), col = rgb(155, 255, 255, maxColorValue=255), size=2) + # LTOP
+  geom_point(aes(y = STotOther), col = rgb(107, 107, 255, maxColorValue = 255), size=2) + # subset sampeld by FOCI
+  geom_line(aes(y = ATotOther), col = rgb(155, 255, 255, maxColorValue=255), size=2) + # LTOP
+  geom_line(aes(y = STotOther), col = rgb(107, 107, 255, maxColorValue = 255), size=2) + # subset sampeld by FOCI
+  theme_boxplot() +
+  theme(axis.line=element_line('black'),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank())+
   scale_y_log10() +
-  coord_cartesian(xlim = c(1996, 2012)) +
-  ylab("Abundance (inidv / m3)") +
+  theme(axis.text.x = element_text(angle=90)) +
+  scale_x_continuous(breaks=c(seq(1996,2012,2)), labels=c(seq(1996,2012,2))) +
+  ylab("Mean Abundance, Other Zooplankton (inidv / m3)") +
   xlab("Year") +
   theme(legend.title=element_blank()) # turns off legend title
 
@@ -887,10 +940,39 @@ ggplot(data=totals, aes(x=Year, y = value, color = variable)) +
 
 # Copepods: Are the subset and totals correlated?
 cor.test(log(totals$ATotCopepods), log(totals$STotCopepods))
-
+# Pearson's product-moment correlation
+# data:  log(totals$ATotCopepods) and log(totals$STotCopepods)
+# t = 21.972, df = 11, p-value = 1.945e-10
+# alternative hypothesis: true correlation is not equal to 0
+# 95 percent confidence interval:
+# 0.9618314 0.9967441
+# sample estimates:
+# cor 
+# 0.9887982
 
 
 # Euphausiids: Are the subset and totals correlated?
 cor.test(log(totals$ATotEuphausiids), log(totals$STotEuphausiids))
+# Pearson's product-moment correlation
+# data:  log(totals$ATotEuphausiids) and log(totals$STotEuphausiids)
+# t = 4.3503, df = 11, p-value = 0.001155
+# alternative hypothesis: true correlation is not equal to 0
+# 95 percent confidence interval:
+# 0.4347578 0.9360731
+# sample estimates:
+# cor 
+# 0.7952458
 
+
+# Other Zooplankton: Are the subset and totals correlated?
+cor.test(log(totals$ATotOther), log(totals$STotOther))
+# Pearson's product-moment correlation
+# data:  log(totals$ATotOther) and log(totals$STotOther)
+# t = 2.5378, df = 11, p-value = 0.02759
+# alternative hypothesis: true correlation is not equal to 0
+# 95 percent confidence interval:
+# 0.08523391 0.86802969
+# sample estimates:
+# cor 
+# 0.6076809
 
