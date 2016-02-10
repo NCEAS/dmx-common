@@ -1,16 +1,17 @@
-# Compile time series from 2015 SAFE report (downloaded Feb 4, 2016)
+# Compile time series from 2015 SAFE report
+# which is available at http://www.afsc.noaa.gov/REFM/stocks/assessments.htm (Downloaded Feb 4, 2016)
 
 library(dplyr)
 
 # set working directory
 setwd("~/Google Drive/GoA project/Data/Datasets/2015 Stock Assessment Reports/extracted data")
 
+
 # 1. load adult arrowtooth data
 atf <- read.csv('Arrowtooth_SA2015_Table1.csv', header=T)
 atfAdult <- atf %>%
   rename(ArrowtoothAge3Plus = BiomassAge3Plus) %>%
   select(Year, ArrowtoothAge3Plus)
-plot(log(atfAdult$ArrowtoothAge3Plus) ~ atfAdult$Year, pch=16, type="b", cex=1.5)
 
 
 # 2. load adult pollock data
@@ -18,7 +19,6 @@ pollock <- read.csv('Pollock_SA2015_Table1.22.csv', header=T)
 pollockAdult <- pollock %>%
   mutate(PollockAge3Plus = BiomassAge3Plusx1000*1000) %>%
   select(Year, PollockAge3Plus)
-plot(log(pollockAdult$PollockAge3Plus) ~ pollockAdult$Year, pch=16, type="b", cex=1.5)
 
 
 # 3. load Pacific cod data (all lengths)
@@ -26,7 +26,6 @@ pcod <- read.csv('PacificCod_SA2015_Table2.12.csv', header=T)
 pcodAll <- pcod %>%
   rename(PCod = AllLengths.Biomass) %>%
   select(Year, PCod)
-plot(log(pcodAll$PCod) ~ pcodAll$Year, pch=16, type="b", cex=1.5)
 
 
 # 4. Sablefish
@@ -107,14 +106,14 @@ rougheyeAdult <- reye %>%
 
 # 15. Thornyheads
 # from SA report: use only 1999, 2005, 2007, 2009, 2015
-thornys <- read.csv('Thornyhead_SA2015_Table15.6.csv', na.strings=c("-- ", ""))
+thornys <- read.csv('Thornyhead_SA2015_Table15.6.csv', header=T, na.strings=c("-- ", ""))
 thornyheadAll <- thornys %>%
   filter(Area == "GoA.all") %>% # select only gulf-wide biomass totals
   filter(Year %in% c(1999, 2005, 2007, 2009, 2015)) %>% # select only 1999, 2005, 2007, 2009, 2015
   group_by(Year) %>%
   summarise(Thornyhead=sum(BiomassTotal)) %>% # I have checked sums
   ungroup()
-# consider keeping Shortspine and Longspine thornyhead separate
+# consider keeping Shortspine and Longspine thornyhead separate ...
 
 
 # 16. Other Rockfish (slope)
@@ -131,6 +130,93 @@ otherRockfishAll <- moreRocks %>%
   rename(OtherRockfish16sp = GulfwideTotal) %>%
   select(Year, OtherRockfish16sp)
 
+
+# 17. Atka mackerel
+# do not use these data. From stock assessment report (p10):
+# "What can be concluded from this is that the general groundfish GOA bottom trawl survey, 
+# as it has been designed and used since 1984, does not assess GOA Atka mackerel well, 
+# and the resulting biomass estimates are not considered consistent reliable indicators of 
+# absolute abundance or indices of trend."
+
+
+# 18. Skates
+# nb biomass estimates from bottom trawls are available on a species basis, by regulatory area, for 10 species, but only on a tri- or bi-ennial basis
+# data used here are Random Effects model output
+# 18a. Big skates
+bigSkates <- read.csv('Skate_BigSkate_SA2015_Table9a.csv', header=T, na.strings="")
+bigSkatesAll <- bigSkates %>%
+  mutate(bigSkates = WestGoA.REModelEst + CentralGoA.REModelEst + EastGoA.REModelEst) %>% # add regional biomass totals to get Gulfwide biomass totals; I have checked the sums
+  select(Year, bigSkates)
+# 18b. Longnose skates
+longnoseSkates <- read.csv('Skate_Longnose_SA2015_Table9b.csv', header=T, na.strings="")
+longnoseSkatesAll <- longnoseSkates %>%
+  mutate(longnoseSkates = WestGoA.REModelEst + CentralGoA.REModelEst + EastGoA.REModelEst) %>% # add regional biomass totals to get Gulfwide biomass totals
+  select(Year, longnoseSkates)
+# 18c. Other skates (including Bering, Mud, Roughtail, Alaska, Aleutian, Whiteblotched, Whitebrow)
+otherSkates <- read.csv('Skate_OtherAggregate_SA2015_Table9c.csv', header=T, na.strings="")
+otherSkatesAll <- otherSkates %>%
+  mutate(otherSkates = WestGoA.REModelEst + CentralGoA.REModelEst + EastGoA.REModelEst) %>% # add regional biomass totals to get Gulfwide biomass totals
+  select(Year, otherSkates)
+  
+
+# 19. Sculpin
+# 2001 survey did not sample eastern GoA, therefore do not use?
+sculpin <- read.csv('Sculpin_SA2015_Table7.csv', header=T, na.strings=c("- ", "-  "))
+
+# set "<1" to "1"
+# can't get any of the following to work:
+for(j in 1:ncol(sculpin)) { 
+  for(i in nrow(sculpin)) {
+    if(sculpin[i,j] == "<1 ")  {sculpin[i,j] <- "1"}
+  }}
+View(sculpin)
+rm(sculpin)
+str(sculpin)
+
+sculpin[sculpin == c("<1 ")] <- "a" # does not work; turns some to NA and others unchanged
+sculpin[sculpin == "\\<1 "] <- 9999999
+sculpin[sculpin == paste(expression("<"),1)] <- 666666
+
+replace(sculpin,"<1 ",999999)
+
+paste(expression("<"),1)
+
+paste(expression(u,v,1+ 0:9))
+
+# not trying gsub because that requires doing it for each column
+
+    
+# Ignore script between ####
+#################################
+# first remember the names
+n <- df.aree$name
+
+# transpose all but the first column (name)
+df.aree <- as.data.frame(t(df.aree[,-1]))
+colnames(df.aree) <- n
+df.aree$myfactor <- factor(row.names(df.aree))
+
+str(df.aree)
+
+
+sculpin1 <- t(sculpin) # transpose the table
+colnames(sculpin1) <- sculpin1[1,] # make first row into column names
+sculpin1 = sculpin1[-1,] # remove first row of table
+# sculpin1 <- sculpin1[2:nrow(sculpin1),] # another way of doing it
+View(sculpin1)
+rm(sculpin1)
+
+sculpin2 <- as.data.frame(sculpin1) # make it a dataframe
+# note all columns are factors
+View(sculpin2)
+rm(sculpin2)
+
+# make rownames into a column
+# name the Year column
+# remove X from in front of years
+# remove * from 2001
+# what to do about "<"?
+##########################################
 
 
 
@@ -154,6 +240,16 @@ Groundfish <- merge(Groundfish,rougheyeAdult,all.x=T)
 Groundfish <- merge(Groundfish,thornyheadAll,all.x=T)
 Groundfish <- merge(Groundfish,sharpchinAll,all.x=T)
 Groundfish <- merge(Groundfish,otherRockfishAll,all.x=T)
+Groundfish <- merge(Groundfish,bigSkatesAll,all.x=T)
+Groundfish <- merge(Groundfish,longnoseSkatesAll,all.x=T)
+Groundfish <- merge(Groundfish,otherSkatesAll,all.x=T)
+
+Groundfish <- merge(Groundfish,otherRockfishAll,all.x=T)
+Groundfish <- merge(Groundfish,otherRockfishAll,all.x=T)
+Groundfish <- merge(Groundfish,otherRockfishAll,all.x=T)
+Groundfish <- merge(Groundfish,otherRockfishAll,all.x=T)
+Groundfish <- merge(Groundfish,otherRockfishAll,all.x=T)
+
 
 
 
