@@ -219,6 +219,29 @@ rm(sculpin2)
 ##########################################
 
 
+# 20. Sharks
+# from SA report p1582: interannual variation in trawl survey depths probably does not impact shark biomass estimates, excpet for 2001
+# therefore only remove 2001 data, and only when using biomass estimates derived solely from bottom trawls
+
+# 20a. Spiny dogfish (data are output of random effects model; units = Biomass(t))
+dogfish <- read.csv('Sharks_Dogfish_SA2015_Table20.14.csv', header=T)
+dogfishAll <- dogfish %>%
+  rename(Dogfish = REModelBiomass) %>%
+  select(Year, Dogfish)
+
+# 20b. Pacific sleeper shark (data are bi- and tri-ennial biomass estimates from bottom trawls)
+# 20c. Salmon shark (data are bi- and tri-ennial biomass estimates from bottom trawls)
+moreSharks <- read.csv('Sharks_SA2015_Table20.12.csv', header=T)
+moreSharksAll <- moreSharks %>%
+  rename(SleeperShark = SleeperShark.BiomassEst, SalmonShark = SalmonShark.BiomassEst) %>%
+  filter(Year != 2001) %>% # remove 2001 estimates
+  select(Year, SleeperShark, SalmonShark)
+
+
+# 21. Squid
+squid <- read.csv('Squid_AllSp_SA2015_Table8.csv', header=T, na.strings="")
+
+
 
 # Create empty data frame with Year column
 Groundfish <- data.frame('Year'=c(1961:2015))
@@ -243,12 +266,8 @@ Groundfish <- merge(Groundfish,otherRockfishAll,all.x=T)
 Groundfish <- merge(Groundfish,bigSkatesAll,all.x=T)
 Groundfish <- merge(Groundfish,longnoseSkatesAll,all.x=T)
 Groundfish <- merge(Groundfish,otherSkatesAll,all.x=T)
-
-Groundfish <- merge(Groundfish,otherRockfishAll,all.x=T)
-Groundfish <- merge(Groundfish,otherRockfishAll,all.x=T)
-Groundfish <- merge(Groundfish,otherRockfishAll,all.x=T)
-Groundfish <- merge(Groundfish,otherRockfishAll,all.x=T)
-Groundfish <- merge(Groundfish,otherRockfishAll,all.x=T)
+Groundfish <- merge(Groundfish,dogfishAll,all.x=T)
+Groundfish <- merge(Groundfish,moreSharksAll,all.x=T)
 
 
 
