@@ -6,19 +6,162 @@
 ## load packages
 library(dplyr)
 library(httr)
+library(xlsx)
+library(reshape2)
 library(taxize)
 
 # Load 2000-2012 data
 setwd("~/Google Drive/GoA project/Data/Datasets/Data Packages/AOOS NCEAS Packages/Continuous Plankton Recorder_Zoop, Phyto, NPacific_97-12/resourceMap_df35d_195_12/data")
 cpr1 <- read.table("df35d.193.9-timeSeries.txt", sep="\t", header=T, stringsAsFactors = F)
-View(cpr1)
-str(cpr1)
 
+# does not work:
 #URL_cpr <- "http://gulfwatch.nceas.ucsb.edu/goa/d1/mn/v1/object/df35d.193.9"
 #cprGet <- GET(URL_cpr)
 #cpr1 <- content(cprGet, as='text')
 #cpr <- read.table(file=textConnection(cprGet), sep="\t", header=T, stringsAsFactors=F) # Error in textConnection(cprGet) : invalid 'text' argument
 
+
+# ------------------------------------------------------------
+
+# Append 2013 data
+setwd("~/Google Drive/GoA project/Data/Datasets/Data Packages/AOOS Ocean Workspace Packages/Continuous Plankton Recorder/Continuous Plankton Recorder package")
+cpr2013 <- read.xlsx2("2013 CPR Category Data.xlsx", sheetIndex = 1, startRow = 4, as.data.frame = T)
+# time is not right ... tried chron(), strsplit(), as.POSIXlt so far ...
+#thetimes <- chron(as.character(cpr2013$time),format=c('m/d/y','h:m:s'))
+#thetimes <- chron(dates1=cpr2013$time[,1], times=cpr2013$time[,2], format=c('m/d/y','h:m:s'))
+#mydate = strptime(cpr2013$time,format='%j/%m/%Y  %I:%M:%S %p') # returns NA
+#mydate = as.POSIXlt(cpr2013$time) #,format='%j/%m/%Y  %I:%M:%S %p') # returns NA
+#mydate
+dim(cpr2013) # should be 229 403
+str(cpr2013)
+View(cpr2013)
+
+cpr2013c <- cpr2013 %>%
+  rename(sample = Sample.ID, d_n = d.n) # clean up metadata column names to match rest of dataset
+
+cpr2013d <- melt(cpr2013c, id.vars = c("sample", "d_n", "time", "day", "month", "year", "lat", "long")) # Change data from wide to long format (ie turn species columns into rows)
+# Warning message: attributes are not identical across measure variables; they will be dropped
+# I think this is not a problem - just an alert that the data columns have numeric & character values
+
+cpr2013e <- cpr2013d %>%
+  rename(OLDSpeciesName = variable, speciesCount = value) %>% # rename long-format columns
+  mutate(sample = as.character(sample)) %>%
+  mutate(d_n = as.character(d_n)) %>%
+  #mutate(time = as.character(time)) %>% # reconsider this
+  mutate(day = as.numeric((levels(day))[day])) %>% 
+  mutate(month = as.numeric((levels(month))[month])) %>%
+  mutate(year = as.numeric((levels(year))[year])) %>%
+  mutate(lat = as.numeric((levels(lat))[lat])) %>%
+  mutate(long = as.numeric((levels(long))[long])) %>%
+  mutate(OLDSpeciesName = as.character(OLDSpeciesName))
+View(cpr2013e)
+str(cpr2013e)
+
+unique(sort(cpr2013e$OLDSpeciesName))
+
+#Make OLDSpeciesName align with the way it is in taxa2013b and rest of dataset
+# ORDER OF GSUB CODE MATTERS!
+cpr2013f = cpr2013e %>%
+  mutate(OLDSpeciesName = gsub("\\.", " ", OLDSpeciesName)) %>%
+  mutate(OLDSpeciesName = gsub("      $", "", OLDSpeciesName)) %>% # remove 6 trailing white spaces
+  mutate(OLDSpeciesName = gsub("     $", "", OLDSpeciesName)) %>% # remove 5 trailing white spaces
+  mutate(OLDSpeciesName = gsub("    $", "", OLDSpeciesName)) %>% # remove 4 trailing white spaces
+  mutate(OLDSpeciesName = gsub("   $", "", OLDSpeciesName)) %>% # remove 3 trailing white spaces
+  mutate(OLDSpeciesName = gsub("  $", "", OLDSpeciesName)) %>% # remove 2 trailing white spaces
+  mutate(OLDSpeciesName = gsub(" $", "", OLDSpeciesName)) %>% # remove trailing single white spaces
+  mutate(OLDSpeciesName = gsub("    ", " ", OLDSpeciesName)) %>% # replace 4 white spaces in middle of string with single space
+  mutate(OLDSpeciesName = gsub("   ", " ", OLDSpeciesName)) %>% # replace 3 white spaces in middle of string with single space
+  mutate(OLDSpeciesName = gsub("  ", " ", OLDSpeciesName)) %>% # replace 2 white spaces in middle of string with single space
+
+  mutate(OLDSpeciesName = gsub("spp$", "spp.", OLDSpeciesName)) %>% # be sure to do this for taxa2013b too
+  mutate(OLDSpeciesName = gsub("      $", "Spiny egg (Candacia armata egg)", OLDSpeciesName)) %>% # (355)
+
+#####################################  
+#unfinished up to line 107
+# name issues still to fix:
+#    Stellate body (Land plant hair)  (356)
+#Rhizomonas setigera = (Solenicola setigera) (+)  (321)
+#Ceratium spp. developing (asexual) (69)
+#[73] "Chaetoceros( Hyalochaete ) spp."                 "Chaetoceros( Phaeoceros ) spp." 
+#Clione pacific/Thliptodon  (84)
+#Ctenocalanus spp. (unidentified) (100)
+#D. tripos (106)
+#Detonula/Neodenticula temporary (114)
+#Eucalanidae (unidentified) (134)
+#[143] "Euchaetidae (unidentified)"                      "Euchaetidae I-IV (Trav)"  
+#"Favella spp. (unidentified)"  (158)
+#[171] "Gaetanus spp. (unidentified)"  
+#[191] "Hydroids (+)" 
+#[195] "Labidocera spp. (Unidentified)" 
+#[213] "Metridia spp. (V-VI) (unidentified)"
+#"Neocalanus plumchrus V (3.4-3.9) from 2001 only" (232)
+#"Paracineta (+)"  (256)
+#[297] "Pseudo-nitzschia delicatissima complex"
+  
+#I IV
+#V VI
+#V_VI
+#I_IV
+
+unique(sort(cpr2013f$OLDSpeciesName))
+rm(cpr2013f)
+#############################################
+
+# checked for speciesCounts >10 (there should be none) - OK
+
+
+# create look-up table for taxonomic ID, new species name, old species name:
+cpr2013a <- read.xlsx2("2013 CPR Category Data.xlsx", sheetIndex = 1, colIndex = 7:403, startRow = 1, endRow = 4, header = F, as.data.frame = T)
+taxa2013 <- t(cpr2013a) # transpose the table
+taxa2013a <- as.data.frame(taxa2013)
+str(taxa2013a) # all columns are Factors
+
+# Clean up the table:
+taxa2013b <- taxa2013a %>%
+  mutate(planktonType=strsplit(as.character(V2),split=" ") %>%
+           sapply(function(x) x[1])) %>%
+  mutate(analysisStage=strsplit(as.character(V2),split=" ") %>%
+           sapply(function(x) x[2])) %>%
+  rename(taxonIDNumber = V1, NEWSpeciesName = V3, OLDSpeciesName = V4) %>%
+  filter(V2 != "analysis stage") %>% # works
+  filter(V2 != "") %>% # works
+  select(-V2) %>%
+  mutate(analysisStage = gsub("Colour", "Colour Index", analysisStage)) %>% 
+  mutate(planktonType = gsub("Phyto.", "phytoplankton", planktonType)) %>%
+  mutate(planktonType = gsub("Zoo.", "zooplankton", planktonType)) %>%
+  mutate(taxonIDNumber = as.numeric((levels(taxonIDNumber))[taxonIDNumber])) %>%
+  mutate(NEWSpeciesName = as.character(NEWSpeciesName)) %>%
+  mutate(OLDSpeciesName = as.character(OLDSpeciesName))
+
+for(j in 1:nrow(taxa2013b)) {
+  if(taxa2013b$planktonType[j] == "non-routine") {taxa2013b$analysisStage[j] <- "non-routine"} # some are zooplankton, some phytoplankton, therefore do not set to "non-routine zoo" as in rest of dataset
+}
+
+head(taxa2013b)
+
+# merge taxa2013b onto cpr2013e using OLDSpeciesName
+dim(cpr2013e) # 90455    10
+str(cpr2013e) # everything except speciesCount is a Factor
+str(taxa2013b)
+cpr2013f <- left_join(cpr2013e, taxa2013b, by = "OLDSpeciesName") # everything in taxa2013b is NA
+dim(cpr2013f) # make sure it is the same length at cpr2013e
+View(cpr2013f)
+
+
+# ------------------------------------------------------------
+
+# Append 2014 data:
+
+cpr2014 <- read.xlsx2("2014 CPR Category Data.xlsx", sheetIndex = 1, startRow = 4, as.data.frame = T)
+View(cpr2014)
+dim(cpr2014) # should be 226 164 (why so many fewer than 2013? data set does not appear to be missing columns, because both taxonomic ID numbers finish around 10670)
+
+
+# CHECK FOR COUNTS >10 (PHYTO) AND >12 (ZOOP)
+# check for 43
+
+
+# ------------------------------------------------------------
 
 # split date & time
 cpr2 <- cpr1 %>%
@@ -306,3 +449,68 @@ View(itis.phyto.names)
 
 # NCBI misses more taxa than ITIS, therefore use ITIS result
 # manually add information for a few taxa that NCBI found that ITIS didn't
+
+for(j in 1:nrow(itis.phyto.names)) {
+  if(itis.phyto.names$raceCode[j] == 29999) {itis.phyto.names$sciName[j] <- "Acanthopterygii"}
+  if(SMTtaxa1$raceCode[j] == 21741) {SMTtaxa1$sciName[j] <- "Gadus chalcogrammus"} # update to accepted name
+  if(SMTtaxa1$raceCode[j] == 30150) {SMTtaxa1$sciName[j] <- "Sebastes"} # assign 30150 (dusky rockfishes unid.) to Sebastes
+  if(SMTtaxa1$raceCode[j] == 30590) {SMTtaxa1$sciName[j] <- "Sebastes"} # assign 30590 (red rockfish unident.) to Sebastes
+}
+
+
+# ----------------------------------------------------------
+
+# sampling months (Batten uses Spring = April/May, Fall = Aug/Sept, probably counted July 29 2002 as August data)
+
+# Which months are sampled?
+View(cpr3)
+plot(cpr3$month ~ cpr3$year, pch=16, cex=2.5, 
+     xlim=c(2000,2012), xlab="Year", ylab="Month")
+# no data for 2010 & 2011?
+
+# within April
+cprApril <- cpr3 %>% filter(month == 4)
+plot(cprApril$day ~ cprApril$year, pch=16, cex=2)
+
+# within May
+cprMay <- cpr3 %>% filter(month == 5)
+plot(cprMay$day ~ cprMay$year, pch=16, cex=2)
+
+# within July
+cprJuly <- cpr3 %>% filter(month == 7)
+plot(cprJuly$day ~ cprJuly$year, pch=16, cex=2)
+
+# within Aug
+cprAug <- cpr3 %>% filter(month == 8)
+plot(cprAug$day ~ cprAug$year, pch=16, cex=2)
+
+# within Sept
+cprSept <- cpr3 %>% filter(month == 9)
+plot(cprSept$day ~ cprSept$year, pch=16, cex=2)
+
+# within Oct
+cprOct <- cpr3 %>% filter(month == 10)
+plot(cprOct$day ~ cprOct$year, pch=16, cex=2) # 2002 sample is Oct 21
+
+
+
+
+
+
+
+
+# split off stage?
+# split into phyto, microzoo, and zooplankton
+# group by taxa, not stage
+# decide which analysis stage to use (eg "field of view", "eyecount", etc)
+
+# note that $speciesCount is a character because levels range from 0-12 and "present"
+unique(sort(cpr2$speciesCount))
+
+# speciesCount is chr ... 
+unique(sort(cpr2$speciesCount))  
+#  [1] "0"       "1"       "10"      "11"      "12"      "2"       "3"       "4"       "5"       "6"       "7"       "8"       "9"      
+# [14] "present"
+df35d.212.1-tableOfAcceptedValues_p.csv
+df35d.213.1-tableOfAcceptedValues_z.csv
+
