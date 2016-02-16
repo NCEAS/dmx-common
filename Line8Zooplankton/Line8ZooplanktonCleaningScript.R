@@ -8,7 +8,6 @@
 library(dplyr)
 library(httr)
 library(lubridate)
-library(taxize)
 
 
 # load the data
@@ -40,15 +39,3 @@ l8zoop2 <- l8zoop %>%
   mutate(day=as.numeric(day1)) %>%
   mutate(gearDistFromBottom = bottom_depth - max_gear_depth) %>%
   select(-haul_id, -gmt_date_time, -gmt_date_time1, -akst_date_time, -date, -month1, -day1)
-head(l8zoop2)
-
-
-
-# Issues to deal with:
-# figure out if there are 2 nets (1 & 2) for each haul - why are 1 and 2 noted, 
-# and past issue that Janet mentioned re nets being combined already in the database?
-
-# clean up taxon names
-# create decision tree re which species / sizes / sexes to use from which mesh size
-# EST_NUM_PERM2 and EST_NUM_PERM3 are both  vectors of characters because of "Present"
-
