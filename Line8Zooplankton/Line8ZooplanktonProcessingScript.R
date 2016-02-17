@@ -8,6 +8,10 @@
 source('Line8ZooplanktonCleaningScript.R') # does not work?  tell R to look in this subfolder of the repo?
 head(l8zoop2)
 
+# create columns for metadata visualizations:
+l8zoop3 <- l8zoop2 %>%
+  mutate(gearDistFromBottom = bottomDepth - maxGearDepth)
+
 
 ######################################################################
 
@@ -67,18 +71,357 @@ plot(l8zoop2$julianDay ~ l8zoop2$year, pch=16, cex=2.5)
 
 
 # Visualize net depths
-plot(l8zoop2$gearDistFromBottom ~ l8zoop2$net, pch=16)
-plot(l8zoop2$gearDistFromBottom ~ l8zoop2$year, pch=16)
+plot(l8zoop3$gearDistFromBottom ~ l8zoop3$net, pch=16)
+plot(l8zoop3$gearDistFromBottom ~ l8zoop3$year, pch=16)
 
+
+# Visualize which nets are in the database for which years
+plot(l8zoop3$net ~ l8zoop3$year, pch=16)
+plot(l8zoop3$mesh ~ l8zoop3$year, pch=16)
+
+
+# trying to figure out net 1 vs net 2:
+# only net 1 for all years (excpet 1995, 1997, 1999, which have no data)
+# both nets for 1998, 2004-2012
+# have both 20BON and 60BON nets for 2004 - 2012
+
+# for all years:
+# net 2 is always 60BON, net 1 is both
+# 60BON is always 333um mesh, 20BON is always 153um mesh
+
+# have 333um mesh (60BON) for 1989-1994, 1996, 1998, 2000, 2001, 2004-2012
+# have 153um mesh (20BON) for 2002-2012
+
+# see cruise metadata here: http://access.afsc.noaa.gov/icc/selectionframe.php
+
+
+
+######################################################################
+
+# Calculate annual mean abundances for Spring for each species:
+
+# subset the data
+l8zoop4 <- l8zoop3 %>%
+  filter(julianDay > 114, julianDay < 160) %>% # select samples collected between April 25 and June 8
+  filter(mesh == 333) %>% # select only data from 333um mesh net, because the 153um mesh net was only deployed starting in 2002.
+  filter(volumetricAbund != "Present") %>% # for now, remove "Present" until we know how to deal with it
+  mutate(volumetricAbund = as.numeric(volumetricAbund)) # convert to a numeric vector
+head(l8zoop4)  
+
+
+#######################################################################
+
+# trying to create a function:
+# Create a table of data for species and stages quantitatively sampled by the 333um mesh net:
+
+# create filter conditions:
+condition1 <- list(taxonName = "Neocalanus cristatus", stageVector=c("adult", "c - 5 (copepodite v)", "c - 3 (copepodite iii)"))
+condition2 <- list(taxonName = "Eucalanus bungii", stageVector=c("adult", "c - 5 (copepodite v)", "c - 4 (copepodite iv)", "c - 3 (copepodite iii)"))
+conditionList <- list(condition1, condition2)
+
+# Define the filtering function
+filterStages <- function(condition, l8zoop4) {
+  subset.data <- l8zoop4 %>%
+    filter(taxonName == condition$taxonName) %>%
+    filter(stage %in% condition$stageVector)
+  return(subset.data)
+}
+
+# check that the filter function works for N. cristatus:
+a <- filterStages(condition1, l8zoop4) # a is a list and a dataframe
+b <- filterStages(condition2, l8zoop4) 
+
+
+# apply the function to the dataframe
+resultDataList <- lapply(conditionList, filterStages, l8zoop4)
+resultDataList # this is a list
+b <- as.data.frame(resultDataList) # nope.
+
+unique(resultDataList$taxonName)
+
+
+# now calculate annual mean abundances for each species.
+# problem: how to work with output from above function that is a list instead of a dataframe?
+
+
+#abund = function(LgStages) {
+#  group_by(year, station, taxonName) %>%
+#    summarise(AetideidaeSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+#    ungroup %>%
+#    group_by(year, taxonName) %>%
+#    summarise(Aetideidae=mean(AetideidaeSite)) %>%  # then calculate mean abundance across all stations, for each year
+#    ungroup
+#}
+
+
+#######################################################################
+
+
+# temporary fix: group needs these data asap, so do the calculations one-at-a-time until I can figure out the function
+
+Ncristatus = l8zoop4 %>%
+  filter(taxonName == "Neocalanus cristatus") %>%
+  filter(stage %in% c("adult", "c - 5 (copepodite v)", "c - 3 (copepodite iii)")) %>%
+  group_by(year, station) %>%
+  summarise(NcristatusSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(Ncristatus=mean(NcristatusSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+#View(Ncristatus)
+
+
+# "Neocalanus flemingeri" and "Neocalanus flemingeri / plumchrus" 
+# use Adult (M/F), CV, CIV, CIII
+# only observed in 2012 and only in the 153um net, stages C1 - C4
+
+
+Ebungii = l8zoop4 %>%
+  filter(taxonName == "Eucalanus bungii") %>%
+  filter(stage %in% c("adult", "c - 5 (copepodite v)", "c - 4 (copepodite iv)", "c - 3 (copepodite iii)")) %>%
+  group_by(year, station) %>%
+  summarise(EbungiiSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(Ebungii=mean(EbungiiSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+#View(Ebungii)
+
+
+Cmarshallae = l8zoop4 %>%
+  filter(taxonName == "Calanus marshallae") %>%
+  filter(stage %in% c("adult", "c - 5 (copepodite v)", "c - 4 (copepodite iv)", "c - 3 (copepodite iii)")) %>%
+  group_by(year, station) %>%
+  summarise(CmarshallaeSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(Cmarshallae=mean(CmarshallaeSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+
+
+Cpacificus = l8zoop4 %>%
+  filter(taxonName == "Calanus pacificus") %>%
+  filter(stage %in% c("adult", "c - 5 (copepodite v)", "c - 4 (copepodite iv)"))%>%
+  group_by(year, station) %>%
+  summarise(CpacificusSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(Cpacificus=mean(CpacificusSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+
+
+Mpacificalucens = l8zoop4 %>%
+  filter(taxonName == "Metridia pacifica/lucens") %>%
+  filter(stage %in% c("C6 + C5", "c - 5 (copepodite v)")) %>%
+  group_by(year, station) %>%
+  summarise(MpacificalucensSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(Mpacificalucens=mean(MpacificalucensSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+
+
+Metridia = l8zoop4 %>%
+  filter(taxonName == "Metridia spp.") %>%
+  filter(stage %in% c("C6 + C5", "c - 5 (copepodite v)")) %>%
+  group_by(year, station) %>%
+  summarise(MetridiaSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(Metridia=mean(MetridiaSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+
+
+CalanidsUnid = l8zoop4 %>%
+  filter(taxonName == "Unidentified Calanids") %>%
+  filter(stage %in% c("c - 3 (copepodite iii)")) %>%
+  group_by(year, station) %>%
+  summarise(CalanidsUnidSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(CalanidsUnid=mean(CalanidsUnidSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+
+
+#Unidentified Calanids (Damaged; all sizes) # none in these data
+
+
+#Other copepoda (Damaged, adults, all sizes) # none in these data
+
+
+# Euphausiids (could do all euphausiids except stage = "Calyptopis 1, 2, 3" and "Nauplii")
+
+EuphausiidAdJuv = l8zoop4 %>%
+  filter(time < 04:10:00, time > 11:40:00) %>% # use only samples collected at night; define night as 1 hr before sunrise (5:10am) and 1 hr after sunset (10:40pm) in Anchorage on May 15 ()
+  filter(taxonName %in% c("Tessarabrachion oculatum", "Thysanoessa raschii", "Thysanoessa inermis", "Thysanoessa spinifera",
+                          "Thysanoessa longipes", "Thysanoessa inspinata", "Euphasia pacifica", "Euphausiid")) %>%
+  filter(stage %in% c("a + j (adult/juvenile)")) %>%
+  group_by(year, station) %>%
+  summarise(EuphausiidAdJuvSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(EuphausiidAdJuv=mean(EuphausiidAdJuvSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+
+
+EuphausiidFurcillia = l8zoop4 %>%
+  filter() %>% # use only samples collected at night
+  filter(taxonName == "Euphausiid") %>%
+  filter(stage %in% c("furcilia")) %>%
+  group_by(year, station) %>%
+  summarise(EuphausiidFurcilliaSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(EuphausiidFurcillia=mean(EuphausiidFurcilliaSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+
+
+Chaetognatha = l8zoop4 %>%
+  filter(taxonName %in% c("Chaetognatha", "Chaetognatha (other)")) %>%
+  filter(size %in% c(">= 5 and < 20 mm", ">= 20 mm")) %>%
+  group_by(year, station) %>%
+  summarise(ChaetognathaSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(Chaetognatha=mean(ChaetognathaSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+
+
+NatantiaAdJuv = l8zoop4 %>%
+  filter(taxonName == "Natantia") %>%
+  filter(stage %in% c("a + j (adult/juvenile)")) %>%
+  filter(size == ">= 5 mm") %>%
+  group_by(year, station) %>%
+  summarise(NatantiaAdJuvSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(NatantiaAdJuv=mean(NatantiaAdJuvSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+
+
+InvertLarvae = l8zoop4 %>%
+  filter(taxonName %in% c("Natantia", "Anomura, larvae", "Brachyura, larvae")) %>%
+  filter(stage %in% c("larva")) %>%
+  group_by(year, station) %>%
+  summarise(InvertLarvaeSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(InvertLarvae=mean(InvertLarvaeSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+
+
+# NB ignoring "Teleost (Fish) Larvae" (only in the dataset for 2012)
+
+
+CnidarianMedusae = l8zoop4 %>%
+  filter(taxonName %in% c("Cnidaria")) %>%
+  filter(size %in% c(">= 5 mm")) %>%
+  group_by(year, station) %>%
+  summarise(CnidarianMedusaeSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(CnidarianMedusae=mean(CnidarianMedusaeSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+
+
+Ctenophora = l8zoop4 %>%
+  filter(taxonName %in% c("Ctenophora")) %>%
+  filter(size %in% c(">= 5 mm")) %>%
+  group_by(year, station) %>%
+  summarise(CtenophoraSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(Ctenophora=mean(CtenophoraSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+
+
+Gammaridea = l8zoop4 %>%
+  filter(taxonName %in% c("Gammaridea", "Gammaridea (Unidentifiable)")) %>%
+  filter(size %in% c(">= 5 mm")) %>%
+  group_by(year, station) %>%
+  summarise(GammarideaSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(Gammaridea=mean(GammarideaSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+
+
+Hyperiidea = l8zoop4 %>%
+  filter(taxonName == "Hyperiidea") %>%
+  filter(size %in% c(">= 5 mm")) %>%
+  group_by(year, station) %>%
+  summarise(HyperiideaSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(Hyperiidea=mean(HyperiideaSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+
+
+Mysidacea = l8zoop4 %>%
+  filter() %>% # use only samples collected at night
+  filter(taxonName == "Mysidacea") %>%
+  filter(size %in% c(">= 5 mm")) %>%
+  group_by(year, station) %>%
+  summarise(MysidaceaSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(Mysidacea=mean(MysidaceaSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+
+
+Siphonophora = l8zoop4 %>%
+  filter(taxonName == "Siphonophora") %>%
+  filter(size %in% c(">= 5 mm")) %>%
+  group_by(year, station) %>%
+  summarise(SiphonophoraSite=sum(volumetricAbund)) %>% # sum abundance for all these stages, for each station
+  ungroup %>%
+  group_by(year) %>%
+  summarise(Siphonophora=mean(SiphonophoraSite)) %>% # then calculate mean abundance across all stations, for each year
+  ungroup
+
+
+
+######################################################################
+
+# Compile these into a single dataframe:
+
+SpringZoopAbund <- data.frame('year'=c(1989:2012)) # create dataframe with years
+
+# Merge in the taxon-specific data:
+SpringZoopAbund <- merge(SpringZoopAbund,Ncristatus,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,Ebungii,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,Cmarshallae,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,Cpacificus,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,Mpacificalucens,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,Metridia,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,CalanidsUnid,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,EuphausiidAdJuv,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,EuphausiidFurcillia,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,Chaetognatha,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,NatantiaAdJuv,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,InvertLarvae,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,CnidarianMedusae,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,Ctenophora,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,Gammaridea,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,Hyperiidea,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,Mysidacea,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,Siphonophora,all.x=T)
+
+
+SpringZoopAbund1 <- SpringZoopAbund %>% 
+  filter(year %in% c(1989:1993, 1996, 1998, 2000, 2001, 2004:2011)) # we do not have data for 1994, 1995, 1997, 1999, 2002, 2003, and 2012 does not reflect mesh change to 505um
+#View(SpringZoopAbund1)
+
+write.csv(SpringZoopAbund1, file = "Line8SpringZoop.csv", row.names = F) # create .csv file of output
 
 ######################################################################
 
 
 # Issues to deal with:
-# figure out if there are 2 nets (1 & 2) for each haul - why are 1 and 2 noted, 
-# and past issue that Janet mentioned re nets being combined already in the database?
 
-# clean up taxon names
-# create decision tree re which species / sizes / sexes to use from which mesh size
-# EST_NUM_PERM2 and EST_NUM_PERM3 are both  vectors of characters because of "Present"
+# 1. problem defining night time for Euphausiid & Mysid samples (lines 255, 268, 361)
 
+# 2. discuss with Janet how to quantitatively interpret "Present" (e.g. 0.0028, which is smallest observed unit?)
+
+# 3. need to specify zeros for years where species were not observed vs years with no data collection. 
+# for now, can add zeros to missing rows and remove years for which I know that no samples were collected (1994, 1995, 1997, 1999, 2002, 2003)
