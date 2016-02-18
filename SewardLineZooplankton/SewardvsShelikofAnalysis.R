@@ -13,7 +13,7 @@
 # Create small zooplankton (from 150um mesh CalVET net)
 # Extract Seward Line (GAK) sites from Small Zoop file
 May.s = SCZo1 %>%
-  filter(stationID %in% c("GAK1", "GAK2", "GAK3", "GAK4") %>% #, "GAK5", "GAK6", "GAK7", "GAK8", "GAK9", "GAK10", "GAK11", "GAK12", "GAK13")) %>%
+  filter(stationID %in% c("GAK1", "GAK2", "GAK3", "GAK4")) %>% #, "GAK5", "GAK6", "GAK7", "GAK8", "GAK9", "GAK10", "GAK11", "GAK12", "GAK13")) %>%
   filter(Month == 5)
 
 
@@ -299,7 +299,7 @@ SmPodonidae = May.s %>%
 # ----------------
 
 # Create dataframe with years; please excuse the ugly code
-Year <- c(1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010)
+Year <- c(1998:2010, 1998:2010, 1998:2010, 1998:2010) #, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010, 1998:2010)
 stationID <- c("GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1", "GAK1",
                "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", "GAK2", 
                "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", "GAK3", 
@@ -318,7 +318,7 @@ ACCMaySmZoAbund <- data.frame(Year, stationID)
 str(ACCMaySmZoAbund)
 
 
-# Merge in the taxon-specific biomass data
+# Merge in the taxon-specific abundance data
 ACCMaySmZoAbund <- merge(ACCMaySmZoAbund,SmAcartia,all.x=T)
 ACCMaySmZoAbund <- merge(ACCMaySmZoAbund,SmAetideidae,all.x=T)
 ACCMaySmZoAbund <- merge(ACCMaySmZoAbund,SmCmarshallae,all.x=T)
@@ -362,7 +362,7 @@ ACCMaySmZoAbund <- merge(ACCMaySmZoAbund,SmPodonidae,all.x=T)
 
 # Extract Seward Line (GAK) sites from Large Zoop file
 MayACC = DepthInt.taxinfo %>%
-  filter(stationID %in% c("GAK1", "GAK2", "GAK3", "GAK4") %>% #, "GAK5", "GAK6", "GAK7", "GAK8", "GAK9", "GAK10", "GAK11", "GAK12", "GAK13")) %>%
+  filter(stationID %in% c("GAK1", "GAK2", "GAK3", "GAK4")) %>% #, "GAK5", "GAK6", "GAK7", "GAK8", "GAK9", "GAK10", "GAK11", "GAK12", "GAK13")) %>%
   filter(Month == 5)
 str(MayACC)
 
