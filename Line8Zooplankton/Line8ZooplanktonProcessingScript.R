@@ -4,13 +4,25 @@
 #  Script by Colette Ward (ward at nceas.ucsb.edu)   #
 ######################################################
 
+
+## load packages
+library(dplyr)
+library(lubridate)
+
+
 # call output dataframe from Cleaning Script
 source('Line8ZooplanktonCleaningScript.R') # does not work?  tell R to look in this subfolder of the repo?
 head(l8zoop2)
 
+
+
+######################################################################
+
+
 # create columns for metadata visualizations:
 l8zoop3 <- l8zoop2 %>%
-  mutate(gearDistFromBottom = bottomDepth - maxGearDepth)
+  mutate(gearDistFromBottom = bottomDepth - maxGearDepth) %>%
+  mutate(julianDay = yday(akst_date_time)) # create vector of julian days
 
 
 ######################################################################
@@ -61,8 +73,8 @@ ggplot(data=fWorld) +
 
 # Visualize sampling months
 
-plot(l8zoop2$month ~ l8zoop2$year, pch=16, cex=2.5)
-plot(l8zoop2$julianDay ~ l8zoop2$year, pch=16, cex=2.5)
+plot(l8zoop3$month ~ l8zoop3$year, pch=16)
+plot(l8zoop3$julianDay ~ l8zoop3$year, pch=16)
 # May 1 = 121, May 31 = 151
 # April 25 = 115, June 8 = 159
 
@@ -107,6 +119,10 @@ l8zoop4 <- l8zoop3 %>%
   filter(volumetricAbund != "Present") %>% # for now, remove "Present" until we know how to deal with it
   mutate(volumetricAbund = as.numeric(volumetricAbund)) # convert to a numeric vector
 head(l8zoop4)  
+
+# # create dataframe with samples collected at night (use this for Euphausiids and Mysids)
+# define night as 1 hr before sunrise (5:10am) and 1 hr after sunset (10:40pm) in Anchorage on May 15 ... ie 12am to 4am
+night <- with(l8zoop4, l8zoop4[hour(akst_date_time) >= 0 & hour(akst_date_time) < 4 ,])
 
 
 #######################################################################
@@ -249,10 +265,7 @@ CalanidsUnid = l8zoop4 %>%
 #Other copepoda (Damaged, adults, all sizes) # none in these data
 
 
-# Euphausiids (could do all euphausiids except stage = "Calyptopis 1, 2, 3" and "Nauplii")
-
-EuphausiidAdJuv = l8zoop4 %>%
-  filter(time < 04:10:00, time > 11:40:00) %>% # use only samples collected at night; define night as 1 hr before sunrise (5:10am) and 1 hr after sunset (10:40pm) in Anchorage on May 15 ()
+EuphausiidAdJuv = night %>%
   filter(taxonName %in% c("Tessarabrachion oculatum", "Thysanoessa raschii", "Thysanoessa inermis", "Thysanoessa spinifera",
                           "Thysanoessa longipes", "Thysanoessa inspinata", "Euphasia pacifica", "Euphausiid")) %>%
   filter(stage %in% c("a + j (adult/juvenile)")) %>%
@@ -264,8 +277,7 @@ EuphausiidAdJuv = l8zoop4 %>%
   ungroup
 
 
-EuphausiidFurcillia = l8zoop4 %>%
-  filter() %>% # use only samples collected at night
+EuphausiidFurcillia = night %>%
   filter(taxonName == "Euphausiid") %>%
   filter(stage %in% c("furcilia")) %>%
   group_by(year, station) %>%
@@ -357,8 +369,7 @@ Hyperiidea = l8zoop4 %>%
   ungroup
 
 
-Mysidacea = l8zoop4 %>%
-  filter() %>% # use only samples collected at night
+Mysidacea = night %>%
   filter(taxonName == "Mysidacea") %>%
   filter(size %in% c(">= 5 mm")) %>%
   group_by(year, station) %>%
@@ -385,7 +396,12 @@ Siphonophora = l8zoop4 %>%
 
 # Compile these into a single dataframe:
 
-SpringZoopAbund <- data.frame('year'=c(1989:2012)) # create dataframe with years
+# problem with missing zeros, but can't simply change blanks to zeros, because we do not have any data for some years
+# therefore, merge the above vectors onto a data frame of years for which we have data. 
+# after doing this, any blanks in the data can be changed to zero.
+
+SpringZoopAbund <- data.frame('year'=c(1989:1993, 1996, 1998, 2000, 2001, 2004:2011)) # create dataframe with years
+# do not include 2012 for now because these data do not reflect mesh change to 505um
 
 # Merge in the taxon-specific data:
 SpringZoopAbund <- merge(SpringZoopAbund,Ncristatus,all.x=T)
@@ -395,8 +411,6 @@ SpringZoopAbund <- merge(SpringZoopAbund,Cpacificus,all.x=T)
 SpringZoopAbund <- merge(SpringZoopAbund,Mpacificalucens,all.x=T)
 SpringZoopAbund <- merge(SpringZoopAbund,Metridia,all.x=T)
 SpringZoopAbund <- merge(SpringZoopAbund,CalanidsUnid,all.x=T)
-SpringZoopAbund <- merge(SpringZoopAbund,EuphausiidAdJuv,all.x=T)
-SpringZoopAbund <- merge(SpringZoopAbund,EuphausiidFurcillia,all.x=T)
 SpringZoopAbund <- merge(SpringZoopAbund,Chaetognatha,all.x=T)
 SpringZoopAbund <- merge(SpringZoopAbund,NatantiaAdJuv,all.x=T)
 SpringZoopAbund <- merge(SpringZoopAbund,InvertLarvae,all.x=T)
@@ -404,24 +418,38 @@ SpringZoopAbund <- merge(SpringZoopAbund,CnidarianMedusae,all.x=T)
 SpringZoopAbund <- merge(SpringZoopAbund,Ctenophora,all.x=T)
 SpringZoopAbund <- merge(SpringZoopAbund,Gammaridea,all.x=T)
 SpringZoopAbund <- merge(SpringZoopAbund,Hyperiidea,all.x=T)
-SpringZoopAbund <- merge(SpringZoopAbund,Mysidacea,all.x=T)
 SpringZoopAbund <- merge(SpringZoopAbund,Siphonophora,all.x=T)
+# now change all NA to zero
+SpringZoopAbund[is.na(SpringZoopAbund)] <- 0
+#View(SpringZoopAbund)
 
 
-SpringZoopAbund1 <- SpringZoopAbund %>% 
-  filter(year %in% c(1989:1993, 1996, 1998, 2000, 2001, 2004:2011)) # we do not have data for 1994, 1995, 1997, 1999, 2002, 2003, and 2012 does not reflect mesh change to 505um
-#View(SpringZoopAbund1)
 
-write.csv(SpringZoopAbund1, file = "Line8SpringZoop.csv", row.names = F) # create .csv file of output
+# do the same for years in which samples were collected at night:
+unique(sort(night$year))  # nighttime samples were collected in these years: 1989 1990 1996 2001 2005 2006 2007 2008 2010 2012
+NightSpringZoopAbund <- data.frame('year'=c(1989, 1990, 1996, 2001, 2005:2008, 2010)) 
+
+NightSpringZoopAbund <- merge(NightSpringZoopAbund,EuphausiidAdJuv,all.x=T)
+NightSpringZoopAbund <- merge(NightSpringZoopAbund,EuphausiidFurcillia,all.x=T)
+NightSpringZoopAbund <- merge(NightSpringZoopAbund,Mysidacea,all.x=T)
+#View(NightSpringZoopAbund)
+# there are no zeros in the dataset, but we would fill them in here if needed
+
+
+
+#Now merge Nighttime samples into Spring dataset:
+SpringZoopAbund <- merge(SpringZoopAbund,NightSpringZoopAbund,all.x=T)
+#View(SpringZoopAbund)
+
+
+#write.csv(SpringZoopAbund, file = "Line8SpringZoop.csv", row.names = F) # create .csv file of output
 
 ######################################################################
 
 
 # Issues to deal with:
 
-# 1. problem defining night time for Euphausiid & Mysid samples (lines 255, 268, 361)
-
 # 2. discuss with Janet how to quantitatively interpret "Present" (e.g. 0.0028, which is smallest observed unit?)
 
-# 3. need to specify zeros for years where species were not observed vs years with no data collection. 
-# for now, can add zeros to missing rows and remove years for which I know that no samples were collected (1994, 1995, 1997, 1999, 2002, 2003)
+# 3. in main dataset (under cleaning script) need to specify zeros for years where species were not observed vs years with no data collection. 
+# for now, I've done a temporary fix (see lines 399-401; after removing years for which I know that no samples were collected, changed blanks to zeros)
