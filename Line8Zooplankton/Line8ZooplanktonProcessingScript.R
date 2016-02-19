@@ -79,6 +79,7 @@ plot(l8zoop3$julianDay ~ l8zoop3$year, pch=16)
 # April 25 = 115, June 8 = 159
 
 
+
 ######################################################################
 
 
@@ -121,9 +122,10 @@ l8zoop4 <- l8zoop3 %>%
 head(l8zoop4)  
 
 # # create dataframe with samples collected at night (use this for Euphausiids and Mysids)
-# define night as 1 hr before sunrise (5:10am) and 1 hr after sunset (10:40pm) in Anchorage on May 15 ... ie 12am to 4am
-night <- with(l8zoop4, l8zoop4[hour(akst_date_time) >= 0 & hour(akst_date_time) < 4 ,])
-
+# define night as 22:00 to 05:59 (took times from Seward Line MOCNESS / Multinet collections) ... Anchorage sunrise/sunset times on May 15 are 05:10 and 22:40
+night <- l8zoop4 %>%
+  filter(hour(akst_date_time) >= 22 | hour(akst_date_time) < 6)
+head(night)
 
 #######################################################################
 
@@ -426,14 +428,14 @@ SpringZoopAbund[is.na(SpringZoopAbund)] <- 0
 
 
 # do the same for years in which samples were collected at night:
-unique(sort(night$year))  # nighttime samples were collected in these years: 1989 1990 1996 2001 2005 2006 2007 2008 2010 2012
-NightSpringZoopAbund <- data.frame('year'=c(1989, 1990, 1996, 2001, 2005:2008, 2010)) 
+unique(sort(night$year))  # nighttime samples were collected in these years: 1989 1990 1996 1998 2000 2001 2005 2006 2007 2008 2010 2012
+NightSpringZoopAbund <- data.frame('year'=c(1989, 1990, 1996, 1998, 2000, 2001, 2005:2008, 2010)) 
 
 NightSpringZoopAbund <- merge(NightSpringZoopAbund,EuphausiidAdJuv,all.x=T)
 NightSpringZoopAbund <- merge(NightSpringZoopAbund,EuphausiidFurcillia,all.x=T)
 NightSpringZoopAbund <- merge(NightSpringZoopAbund,Mysidacea,all.x=T)
 #View(NightSpringZoopAbund)
-# there are no zeros in the dataset, but we would fill them in here if needed
+# there are no NAs in the dataset, but we would fill them in here if needed
 
 
 
