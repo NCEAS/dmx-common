@@ -40,11 +40,8 @@ ASMTmetadata=ASMTh %>%
   mutate(day=as.numeric(day1)) %>%
   rename(lat = lat_start) %>%
   rename(lon = lon_start) %>%
-  rename(startHr = start_hour) %>%
-  rename(duration = duration.hr.) %>%
-  rename(distance = distance.km.) %>%
-  rename(bottomDepth = bottom_depth.m.) %>%
-  rename(gearTemp = gear_temp.c.) %>%
+  rename(startHr = start_hour, duration = duration.hr., distance = distance.km., 
+         bottomDepth = bottom_depth.m., gearTemp = gear_temp.c.) %>%
   select(-fish_date, -Date, -year1, -month1, -day1, -lat_end, -lon_end)
 #View(ASMTmetadata)
 str(ASMTmetadata)
@@ -234,29 +231,12 @@ NSMTmetadata=NSMTh %>%
   mutate(day1=strsplit(as.character(Date),split="-") %>%
            sapply(function(x) x[3])) %>%
   mutate(day=as.numeric(day1)) %>%
-  rename(basin = REGION) %>%
-  rename(cruise = CRUISE) %>%
-  rename(haul = HAUL) %>%
-  rename(haulType = HAUL_TYPE) %>%
-  rename(performance = PERFORMANCE) %>%
-  rename(duration = DURATION) %>%
-  rename(distance = DISTANCE_FISHED) %>%
-  rename(netWidth = NET_WIDTH) %>%
-  rename(netMeasured = NET_MEASURED) %>%
-  rename(netHeight = NET_HEIGHT) %>%
-  rename(stratum = STRATUM) %>%
-  rename(lat = START_LATITUDE) %>%
-  rename(lon = START_LONGITUDE) %>%
-  rename(stationID = STATIONID) %>%
-  rename(gearDepth = GEAR_DEPTH) %>%
-  rename(bottomDepth = BOTTOM_DEPTH) %>%
-  rename(surfaceTemp = SURFACE_TEMPERATURE) %>%
-  rename(gearTemp = GEAR_TEMPERATURE) %>%
-  rename(wireLength = WIRE_LENGTH) %>%
-  rename(gear = GEAR) %>%
-  rename(surfaceSalinity = SURFACE_SALINITY) %>%
-  rename(bottomSalinity = BOTTOM_SALINITY) %>%
-  rename(bay = BAYCODE) %>%
+  rename(basin = REGION, cruise = CRUISE, haul = HAUL, haulType = HAUL_TYPE, performance = PERFORMANCE, 
+         duration = DURATION, distance = DISTANCE_FISHED, netWidth = NET_WIDTH, netMeasured = NET_MEASURED, 
+         netHeight = NET_HEIGHT, stratum = STRATUM, lat = START_LATITUDE, lon = START_LONGITUDE, 
+         stationID = STATIONID, gearDepth = GEAR_DEPTH, bottomDepth = BOTTOM_DEPTH, surfaceTemp = SURFACE_TEMPERATURE, 
+         gearTemp = GEAR_TEMPERATURE, wireLength = WIRE_LENGTH, gear = GEAR, surfaceSalinity = SURFACE_SALINITY, 
+         bottomSalinity = BOTTOM_SALINITY, bay = BAYCODE) %>%
   select(-VESSEL, -START_TIME, -Date, -year1, -month1, -day1, -CRUISEJOIN, -HAULJOIN, 
          -END_LATITUDE, -END_LONGITUDE, -BOTTOM_TYPE, -ACCESSORIES, -SUBSAMPLE, 
          -AUDITJOIN, -RECORDCREATEDATE)
@@ -283,12 +263,7 @@ str(NSMTc)
 
 # Clean up column names
 NSMTcatch = NSMTc %>%
-  rename(basin = REGION) %>%
-  rename(cruise = CRUISE) %>%
-  rename(haul = HAUL) %>%
-  rename(raceCode = SPECIES_CODE) %>%
-  rename(catchkg = WEIGHT) %>%
-  rename(catchnum = NUMBER_FISH) %>%
+  rename(basin = REGION, cruise = CRUISE, haul = HAUL, raceCode = SPECIES_CODE, catchkg = WEIGHT, catchnum = NUMBER_FISH) %>%
   select(-CRUISEJOIN, -HAULJOIN, -CATCHJOIN, -VESSEL, -SUBSAMPLE_CODE, -VOUCHER, -AUDITJOIN, -GEAR, -RECORDCREATEDATE)
 head(NSMTcatch)
 str(NSMTcatch)
