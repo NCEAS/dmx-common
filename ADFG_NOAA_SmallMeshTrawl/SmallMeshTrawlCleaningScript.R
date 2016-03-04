@@ -38,13 +38,10 @@ ASMTmetadata=ASMTh %>%
   mutate(day1=strsplit(as.character(Date),split="-") %>%
            sapply(function(x) x[3])) %>%
   mutate(day=as.numeric(day1)) %>%
-  rename(lat = lat_start) %>%
-  rename(lon = lon_start) %>%
-  rename(startHr = start_hour, duration = duration.hr., distance = distance.km., 
-         bottomDepth = bottom_depth.m., gearTemp = gear_temp.c.) %>%
+  rename(lat = lat_start, lon = lon_start, startHr = start_hour, duration = duration.hr., 
+         distance = distance.km., bottomDepth = bottom_depth.m., gearTemp = gear_temp.c.) %>%
   select(-fish_date, -Date, -year1, -month1, -day1, -lat_end, -lon_end)
-#View(ASMTmetadata)
-str(ASMTmetadata)
+head(ASMTmetadata)
 
 # add a vector with agency name
 for(i in 1:nrow(ASMTmetadata)) {
@@ -224,6 +221,8 @@ NSMTmetadata=NSMTh %>%
   mutate(Date=as.Date(START_TIME, "%d-%b-%y")) %>%   # output is reordered as yyyy-mm-dd, but note all years before 1970 become 20xx (eg 2053)
   mutate(year1=strsplit(as.character(Date),split="-") %>%
            sapply(function(x) x[1])) %>%
+  mutate(year1 = revalue(year1, c("2053"="1953", "2054"="1954", "2057"="1957", "2058"="1958", "2059"="1959", "2062"="1962",
+                                  "2063"="1963", "2064"="1964", "2066"="1966", "2067"="1967", "2068"="1968"))) %>%
   mutate(year=as.numeric(year1)) %>% # insert function here to deal with comment in line 221
   mutate(month1=strsplit(as.character(Date),split="-") %>%
            sapply(function(x) x[2])) %>%
@@ -240,16 +239,14 @@ NSMTmetadata=NSMTh %>%
   select(-VESSEL, -START_TIME, -Date, -year1, -month1, -day1, -CRUISEJOIN, -HAULJOIN, 
          -END_LATITUDE, -END_LONGITUDE, -BOTTOM_TYPE, -ACCESSORIES, -SUBSAMPLE, 
          -AUDITJOIN, -RECORDCREATEDATE)
-#View(SMTmetadata)
 head(NSMTmetadata)
-str(NSMTmetadata)
 
 # add a vector with agency name
 for(i in 1:nrow(NSMTmetadata)) {
   NSMTmetadata$agency[[i]] <- "NOAA"
 }
 head(NSMTmetadata)
-str(NSMTmetadata)
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -334,5 +331,59 @@ str(NSMT)
 
 # Join ADFG & NOAA datasets
 
-SMT = bind_rows(ASMT, NSMT)
-#View(SMT)
+SMTa = bind_rows(ASMT, NSMT)
+#View(SMTa)
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# add vector of site names
+# load look-up table of site names
+URL_sites <- "https://drive.google.com/uc?export=download&id=0B1XbkXxdfD7uR3hmRjY5ZU1pSnM"
+sitesGet <- GET(URL_sites)
+sites1 <- content(sitesGet, as='text')
+sites <- read.csv(file=textConnection(sites1),stringsAsFactors=F)
+
+sites2 <- sites %>%
+  rename(bay = bayCode, site = bayName) %>%
+  select(bay, site)
+
+# merge sites2 onto SMT1:
+SMT <- left_join(SMTa, sites2, by = "bay")
+
+# check for bay codes without site names
+missing <- SMT %>%
+  filter(is.na(site))
+unique(sort(missing$bay)) # 1026 1092 1093 1098 1620 2029 2071 2081 2091 2092 2095 2097 2098 2099 2917 2921 2999 3004 3005 6001
+# see SmallMeshTrawlSamplingLocations.R for mapping of these stations
+
+# consider adding these site names to dataframe using lat / lon or simply bay codes (not needed for current analysis, so have not done):
+
+# 1026 = Marmot Gully (1975 1980 1981 1986 1987 1990 2058 2064), Alitak Flats (1982) 
+# 1092 = Marmot,  1975 1976 1977 1980 1981 1982 1984
+# 1093 = offshore east of Marmot, 1972 1973 1975 1976 1977 1978 1981 1982 1986 2004 2010 2011
+# 1098 = east of site 1008 (between Alitak & Kiliuda), 1971 1972 1973 1974 1975 1976 1977 1978 1979 1980 1981 1982 1983 1984 1986
+# 1620 = Southeast Shumagin Islands, 1990
+# 2029 = South of Umiak Island, also Bering Sea, 1971 1975 1978 1982 1987 1988 1990 2064
+# 2071 = offshore, South of coast between Ivanof Bay & Chignik Bay, 1974 1976 1977 1979
+# 2081 = nearer coast between Ivanof Bay & Chignik Bay, 1974 1975 1976 1977 1979 1980 1981 1984 1986 1989 2008
+# 2091 = just outside Chignik Bay to the southwest, 1974 1975 1976 1977 1979 1980 1981 1982 1986 1989
+# 2092 = north of Shumagin Islands & south of Ivanof point, 1979 1980 1981 1982 1984 1987 1989
+# 2095 = east Shumagin Islands, 2008
+# 2097 = Chignik / Castle Bay, 1981
+# 2098 = arc south & west of Shumagin Islands, 1972 1987 1988 1990 2064
+# 2099 = offshore area east of Shumagin Islands,  1972 1973 1974 1980 1985 1986 1987 1988 1990 2064
+# 2917 = Ivanof Bay, 1974 1976 1977 1979
+# 2921 = south of Morzhovoi Bay, north of Sanak Island, 1979 1981 1989 2006
+# 2999 = south of Ivanof Bay, 1974 1976 1977 1979 1981
+# 3004 = south and east of Unalaska Island,  1978 1980 2057 2064
+# 3005 = between Umiak and Unalaska Islands, also west of Unalaska Island, 1978 1980 1987 1988 2064
+# 6001 = Bering Sea, 1980
+
+# 2003: includes sites at Bering Sea, South Kenai peninsula, Prince William Sound, Icy Bay, SE Alaska, many years
+# but none of these were sampled in most recent available years (1987, 1990)
+
+# 2016: includes sites at Bering Sea, Aleutian Islands, upper Shelikof St, Chignik/Castle, Kodiak Island, Prince William Sound (inside and outside), Icy Bay, many years
+# but none of these were sampled in most recent available years (1987, 1988, 1991)
