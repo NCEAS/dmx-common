@@ -191,3 +191,126 @@ for(i in 1:nrow(adfgLMT)) {
   else {adfgLMT$stage[i] <- NA}
   }
 View(adfgLMT)
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+# Assign site names to match those in Small Mesh Trawl dataset
+unique(sort(adfgLMT$station))
+
+adfgLMT1 <- adfgLMT %>%
+  mutate(site = ifelse((station %in% c("KZA","KZB", "KZC", "KZD", "KZE", "KZF", "KZG", 
+                                       "KZH", "KZI", "KZJ", "KZK", "KZL", "KZM", "KZN", # no KZH, KZI, KZL, KZM, KZN, kzp, kzq in dataset?
+                                       "KZO", "KZP", "KZQ", "KZR", "KZS", "MONX", "MOS")), 
+                                       'Marmot Bay inshore',
+                       
+                ifelse((station %in% c("MOEX","MOT","MOPX", "MOXX", "MOX", "MOLX", "MOQ", # careful, Morzhovoi Bay sites have similar names
+                                       "MOGX", "255X", "255", "256", "257", "283X", "283", 
+                                       "284", "285", "313", "314")), 
+                                       'Marmot Gully offshore',
+                       
+                ifelse((station %in% c("CHA", "CHB", "CHC", "CHD", "CHE", "CHF", "CHG", "CHI", "CHJ", "CHK", "CHL")), 
+                                       'Chiniak Bay inshore', # consider also including CHM, CHU, CHN, CHQ, CHP, CHO, CHR, CHS, CHT, which are all north of the other Chiniak inshore sites
+                 
+                ifelse((station %in% c("369X", "395", "420", "421", "442", "443", "444")), 
+                                       'Chiniak Bay offshore', 
+                                       # where is site 368A?  consider also including 371-373, 394-398, 418-422, 440-445, which are present in dataset
+                                       # these sites are called Chiniak Bay offshore by SMT; Chiniak Gully by LMT
+               
+                ifelse((station %in% c("UGA", "UGAA", "UGAB", "UGAC", "UGB", "UGC", "UGD", 
+                                       "UGE", "UGF", "UGG", "UGH", "UGI", "UGJ", "UGK", "UGM")),
+                                       'Ugak Bay',    
+                       
+                ifelse((station %in% c("KLA", "KLB", "KLC", "KLD", "KLE", "KLF", "KLG", "KLH", "KLI", "KLJ", "KLL",
+                                       "533A", "533B")), # consider calling these Barnabas Gully instead
+                                       'Kiliuda Bay',  
+                       
+                ifelse((station %in% c("486", "486A", "486B", "510", "510A", "510B", "510C", "511", "511A", "511B", 
+                                       "534", "534A", "534B", "534C", "534D", "535", "535A", "535B", "535C", "535D", #consider including "533A", "533B"
+                                       "558", "558B", "559", "560", "561", "585X", "586", "587", "588", "589", 
+                                       "618A", "619", "620", "621", "654", "655", "656", "695", "696")), 
+                                       'Barnabas Gully', 
+                       
+                ifelse((station %in% c("THA", "THB", "THC", "THD", "THF", "THG", "THH", "THI", "THJ", "THK", "THL", "THM", "THN",  
+                                       "614", "615", "650", "651")),
+                                       'Two-Headed Gully',
+                                       # looks like SMT includes Horse's Head Area with Two-Headed Gully ...
+                       
+                ifelse((station %in% c("688", "689", "725", "726", "727", "728", "729", "759", "760", "761")), # also include "794", "795", "796"? (immediately south of 759, 760, 761)
+                                       'Horses Head Area',
+
+                ifelse((station %in% c("ALA", "ALB", "ALC", "ALD", "ALF", "ALG", "ALH", "ALI", 
+                                       "ALJ", "ALK", "ALL", "ALM", "ALO", "ALP", "ALQ", "ALR")),
+                                       'Alitak Bay',
+                                       
+                ifelse((station %in% c("645", "645B", "646A", "646B", "646C", "646D", 
+                                       "682B", "682D", "683A", "683B", "683C", "683D", "684A", "684B", "684C", "684D")),
+                                       'Alitak Flats',
+                       
+                ifelse((station %in% c("UYBX", "UYEX", "UYFX", "UYHX", "UYKX", "UYMX", "UYO", "UYQX", "UYSS", 
+                                       "UYSX", "UYT")),
+                                       'Uyak Bay',
+                       
+                ifelse((station %in% c("KUN", "KUNX", "KUO", "KUP", "KUQ", "KUR", "KUS", "KUT", "KUU", "KUV", "KUW", "KUX", "KUXX", "KUY", "KUYX")),
+                                       'Uganik Bay',
+                       
+                ifelse((station %in% c("KUD", "KUE", "KUF", "KUG", "KUH", "KUI", "KUJ", "KUK", "KUL", "KULX", "KUM")),
+                                       'Viekoda Bay',
+                       
+                ifelse((station %in% c("MAA")), 'Malina Bay',
+                       
+                ifelse((station %in% c("2", "3", "31", "60", "61", "90", "91", "117", "118", "119", 
+                                       "120", "121", "144", "145", "146", "147")),
+                                       'North Shelikof Strait',
+                                       # not sure where to put 172, 173, 174, 198, 199, 200, 222, 223, 224 (North or Central?)
+                       
+                ifelse((station %in% c("171", "171X", "171Y")), 'Kukak Bay',
+                       
+                ifelse((station %in% c("MOA", "MOB", "MOC", "MOD", "MOE", "MOF", "MOG", "MOH", "MOI", 
+                                       "MOJ", "MOK", "MOL", "MOM", "MON", "MOO", "MOOX", "MOP", "MOQ", 
+                                       "MOR", "MORX", "MOS", "MOSX", "MOT", "MOU", "MOV", "MOW", "MOX", 
+                                       "87", "87A", "87AX", "87B", "87C", "87D", "87E")), 'Morzhovoi Bay',
+                       
+                 ifelse((station %in% c("COB", "COC", "COE", "COF", "COG", "COGA", "COGB", "COH", "COJ",
+                                        "COL", "COM", "CON", "COO", "COP", "COQ", "132A")), 'Cold Bay',
+                 
+                 ifelse((station %in% c("BEB", "BEBX", "BEC", "BECX", "BED", "BEE", "BEF", "BEG")), 'Belkofski Bay', 
+                        
+                 ifelse((station %in% c("113", "125", "126", "137", "138", "138A", "138B", "138C")), 'Sanak Island',
+                        
+                 ifelse((station %in% c("PAA", "PAB", "PABX", "PAC", "PAD", "PAE", "PAEX", "PAF", "PAG", "PAH",
+                                        "PAI", "PAIX", "PAJ", "PAL", "PALX", "PAM", "PAN", "PAO", "PAOA", "PAOB",
+                                        "PAP", "PAQ", "PAR", "PARA", "PARB", "PAS", "PAT", "PAU", "PAV", "PAWA", 
+                                        "VOA", "VOB", "VOBX", "VOC", "VOD", "VOE", "VOF", "VOFA", "VOFB", "VOG",
+                                        "VOH", "VOI", "VOJ", "VOK", "VOL", "VOLX", "VOM", "VOMA", "VOMB", "VON",
+                                        "VOO", "VOP", "VOQ", "VOR", "VOT")), 'Pavlof Bay',
+                        
+                 ifelse((station %in% c("BVA", "BVB", "BVC", "BVD", "278")), 'Beaver Bay', # consider whether to include 228, 245, 261, 262
+                        
+                 ifelse((station %in% c("BAA", "BAC", "BAD", "BAE", "BAF", "311", "311A", "311B", "311C", "312A", 
+                                        "329", "329B", "329C", "348", "368A")), 'Balboa-Unga Strait', 
+                        
+                 ifelse((station %in% c("332", "332B", "334", "335", "353", "354", "371", "373A", "373B", "393")), 'West Nagai Strait',
+                        
+                 ifelse((station %in% c("STA", "STB", "STD", "STE", "409", "410")), 'Stepovak Bay', # SMT includes much larger area ...
+                        
+                 ifelse((station %in% c("4900", "4915", "400X", "4000", "4007", "4008", "4009")), 'Ivanof Bay', # SMT includes larger area ...
+                        
+                 ifelse((station %in% c("4024", "4025", "4026", "4035", "4036", "4037", "4038", "4039A", "4039B", 
+                                        "4043", "4048", "4049", "4053", "4063", "4064", "4065", "4066", "4067",
+                                        "4068", "4095")), 'Mitrofania Island', 
+                        
+                 ifelse((station %in% c("4964", "4256", "4260", "4262", "4264", "4265", "4266", "4267", "4270", 
+                                        "4271", "4272", "4274", "4277", "4278", "4279", "4282", "4286", "4287")), 'Chignik-Castle Bays',
+                               
+                 ifelse((station %in% c("4290", "4296", "4298", "4301", "4302", "4304", "4308", "4312")), 'Kujulik Bay',
+                               
+                             )))
+
+# Barnabas Gully )),                
+                
+                     
+dba <- adfgLMT %>%
+  mutate(site = ifelse((station %in% (starts_with("CH"))), 'Chiniak Bay inshore'))                     
+
