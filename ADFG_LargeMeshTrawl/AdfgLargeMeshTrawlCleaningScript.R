@@ -132,7 +132,7 @@ for(j in 1:nrow(adfgLMTcatch3)) {
 
 
 # Query ITIS for higher order taxonomic information:
-adfgLMTsp <- unique(sort(adfgLMTcatch3$sciName))
+#adfgLMTsp <- unique(sort(adfgLMTcatch3$sciName))
 #adfgLMTsp
 #tax.info = tax_name(query = adfgLMTsp, 
 #                    get = c("phylum", "subphylum", "class", "subclass", "infraclass", 
@@ -178,20 +178,17 @@ str(adfgLMT)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-
-# to create empty vector:
-adfgLMT$stage = vector(mode = "logical", length = nrow(adfgLMT))
-#adfgLMT$stage = c(1:nrow(adfgLMT)
-#adfgLMT$stage = rep(0,nrow(adfgLMT))
-                  
 # create column to indicate juveniles
 for(i in 1:nrow(adfgLMT)) {
-  if(adfgLMT$commonName[i] == "Juvenile Cod") {adfgLMT$stage[i] <- "juvenile"}
-  else if(adfgLMT$commonName[i] == "Juvenile pollock") {adfgLMT$stage[i] <- "juvenile"} 
-  else {adfgLMT$stage[i] <- NA}
-  }
-View(adfgLMT)
-
+  if(adfgLMT$commonName[i] %in% c("Pacific cod (juvenile)")) {
+    adfgLMT$stage[i] <- "juvenile"
+    }
+    else{
+      if(adfgLMT$commonName[i] %in% c("Walleye Pollock (juvenile)")) {
+        adfgLMT$stage[i] <- "juvenile"
+        }
+      else adfgLMT$stage[i] <- NA
+}}
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -305,12 +302,7 @@ adfgLMT1 <- adfgLMT %>%
                                         "4271", "4272", "4274", "4277", "4278", "4279", "4282", "4286", "4287")), 'Chignik-Castle Bays',
                                
                  ifelse((station %in% c("4290", "4296", "4298", "4301", "4302", "4304", "4308", "4312")), 'Kujulik Bay',
-                               
-                             )))
-
-# Barnabas Gully )),                
-                
-                     
-dba <- adfgLMT %>%
-  mutate(site = ifelse((station %in% (starts_with("CH"))), 'Chiniak Bay inshore'))                     
-
+                        
+                 NA
+                 )))))))))))))))))))))))))))))))
+View(adfgLMT1)
