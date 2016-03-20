@@ -403,6 +403,22 @@ cprPhyto1 = cprPhyto %>%
   mutate(AccSpeciesName = gsub("\\+", "", AccSpeciesName)) %>% # remove "+"
   mutate(AccSpeciesName = gsub("Rhizosolenia imbrica. shrubsolei", "Rhizosolenia imbricata var. shrubsolei", AccSpeciesName)) %>%
   mutate(AccSpeciesName = gsub("Pontellid", "Pontellidae", AccSpeciesName)) %>%
+  mutate(AccSpeciesName = gsub("Amphidoma caudata", "Azadinium caudatum", AccSpeciesName)) %>% # update for taxonomic revision
+  mutate(AccSpeciesName = gsub("Bacteriosira fragilis", "Bacterosira bathyomphala", AccSpeciesName)) %>% # update for taxonomic revision
+  mutate(AccSpeciesName = gsub("Biddulphia longicruris", "Odontella longicruris", AccSpeciesName)) %>% # update for taxonomic revision
+  mutate(AccSpeciesName = gsub("Dactyliosolen mediterraneus", "Leptocylindrus mediterraneus", AccSpeciesName)) %>% # update for taxonomic revision
+  mutate(AccSpeciesName = gsub("Dinophysis rotundata", "Phalacroma rotundatum", AccSpeciesName)) %>% # update for taxonomic revision
+  mutate(AccSpeciesName = gsub("Eucampia zodiaca", "Eucampia zodiacus", AccSpeciesName)) %>% # update for ITIS spelling
+  mutate(AccSpeciesName = gsub("Hexasterias problematicus", "Hexasterias problematica", AccSpeciesName)) %>% # update for ITIS spelling
+  mutate(AccSpeciesName = gsub("Navicula planamembranacea", "Ephemera planamembranacea", AccSpeciesName)) %>% # update for taxonomic revision
+  mutate(AccSpeciesName = gsub("Podolampus", "Podolampas", AccSpeciesName)) %>% # update for ITIS spelling
+  mutate(AccSpeciesName = gsub("Pseudoeunotia doliolus", "Fragilariopsis doliolus", AccSpeciesName)) %>% # update to accepted name
+  mutate(AccSpeciesName = gsub("Schroederella delicatula", "Detonula pumila", AccSpeciesName)) %>% # update to accepted name
+  mutate(AccSpeciesName = gsub("Silicoflagellatae", "Dictyochales", AccSpeciesName)) %>% # update to searchable name ... REVIEW THIS
+  mutate(AccSpeciesName = gsub("Guinardia cylindrus", "Rhizosolenia cylindrus", AccSpeciesName)) %>% # update to accepted name
+  mutate(AccSpeciesName = gsub("Guinardi delicatula", "Guinardia delicatula", AccSpeciesName)) %>% # update to ITIS spelling
+  mutate(AccSpeciesName = gsub("Phalocroma rotundatum", "Phalacroma rotundatum", AccSpeciesName)) %>% # update to ITIS spelling
+  
   mutate(AccSpeciesName = gsub("Podosira stelligera", "Hyalodiscus stelliger", AccSpeciesName)) %>% # update to accepted name
   mutate(AccSpeciesName = gsub("Podosira stelliger", "Hyalodiscus stelliger", AccSpeciesName)) %>% # update to accepted name
   mutate(AccSpeciesName = gsub("Rhizosolenia alata alata", "Proboscia alata", AccSpeciesName)) %>% # update to accepted name
@@ -419,8 +435,8 @@ cprPhyto1 = cprPhyto %>%
   mutate(AccSpeciesName = gsub(" $", "", AccSpeciesName)) %>%
   # consider changing "Silicoflagellatae"?
   mutate(AccSpeciesName = gsub("Chaetoceros Phaeoceros", "Chaetoceros (Phaeoceros)", AccSpeciesName)) %>%
-  mutate(AccSpeciesName = gsub("Chaetoceros Hyalochaete", "Chaetoceros (Hyalochaete)", AccSpeciesName)) %>%
-  mutate(AccSpeciesName = gsub("Hyalochaete$", "Chaetoceros (Hyalochaete)", AccSpeciesName))
+  mutate(AccSpeciesName = gsub("Chaetoceros Hyalochaete", "Chaetoceros (Hyalochaetae)", AccSpeciesName)) %>%
+  mutate(AccSpeciesName = gsub("Hyalochaete$", "Chaetoceros (Hyalochaetae)", AccSpeciesName))
 #unique(sort(cprPhyto1$AccSpeciesName))
 
 # ----------------------------------------------------------
