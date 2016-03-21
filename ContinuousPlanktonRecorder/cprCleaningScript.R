@@ -418,7 +418,18 @@ cprPhyto1 = cprPhyto %>%
   mutate(AccSpeciesName = gsub("Guinardia cylindrus", "Rhizosolenia cylindrus", AccSpeciesName)) %>% # update to accepted name
   mutate(AccSpeciesName = gsub("Guinardi delicatula", "Guinardia delicatula", AccSpeciesName)) %>% # update to ITIS spelling
   mutate(AccSpeciesName = gsub("Phalocroma rotundatum", "Phalacroma rotundatum", AccSpeciesName)) %>% # update to ITIS spelling
-  
+  mutate(AccSpeciesName = gsub("Lioloma pacificum", "Thalassiothrix mediterranea var. pacifica", AccSpeciesName)) %>% # update to ITIS name REVIEW THIS
+  mutate(AccSpeciesName = gsub("Pontellidaeae", "Pontellidae", AccSpeciesName)) %>% # update to ITIS spelling
+  mutate(AccSpeciesName = gsub("Pseudosolenia calcar-avis", "Rhizosolenia calcar-avis", AccSpeciesName)) %>% # update to ITIS name (Rhizosolenia c-a is already in the CPR database)
+  mutate(AccSpeciesName = gsub("Trichodesmium", "Oscillatoria", AccSpeciesName)) %>% # update to accepted name
+  mutate(AccSpeciesName = gsub("Corethron hystrix", "Corethron criophilum", AccSpeciesName)) %>% # update to accepted name
+  mutate(AccSpeciesName = gsub("Dinophysis saculus", "Dinophysis sacculus", AccSpeciesName)) %>% # update to accepted name
+  mutate(AccSpeciesName = gsub("Emiliania huxlei", "Coccolithus huxleyi", AccSpeciesName)) %>% # update to accepted name
+  mutate(AccSpeciesName = gsub("Proboscia curvirostris", "Proboscia truncata", AccSpeciesName)) %>% # update to accepted name REVIEW THIS
+  mutate(AccSpeciesName = gsub("Proboscia indica", "Rhizosolenia alata f. indica", AccSpeciesName)) %>% # update to accepted name REVIEW THIS
+  # is Solenicola setigera renamed to Rhizomonas setigera or Rhizosolenia setigera?  see http://eol.org/pages/898677/overview
+  mutate(AccSpeciesName = gsub("Scripsiella", "Scrippsiella", AccSpeciesName)) %>% # update to ITIS spelling
+  mutate(AccSpeciesName = gsub("Spiniferites", "Gonyaulax", AccSpeciesName)) %>% # update to ITIS name REVIEW THIS
   mutate(AccSpeciesName = gsub("Podosira stelligera", "Hyalodiscus stelliger", AccSpeciesName)) %>% # update to accepted name
   mutate(AccSpeciesName = gsub("Podosira stelliger", "Hyalodiscus stelliger", AccSpeciesName)) %>% # update to accepted name
   mutate(AccSpeciesName = gsub("Rhizosolenia alata alata", "Proboscia alata", AccSpeciesName)) %>% # update to accepted name
