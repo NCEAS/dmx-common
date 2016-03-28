@@ -121,12 +121,6 @@ l8zoop4 <- l8zoop3 %>%
   mutate(volumetricAbund = as.numeric(volumetricAbund)) # convert to a numeric vector
 head(l8zoop4)  
 
-# Janet advises we don't need to use only night samples for Euphausiids because the whole water column is sampled
-# # create dataframe with samples collected at night (use this for Euphausiids and Mysids)
-# define night as 22:00 to 05:59 (took times from Seward Line MOCNESS / Multinet collections) ... Anchorage sunrise/sunset times on May 15 are 05:10 and 22:40
-#night <- l8zoop4 %>%
-#  filter(hour(akst_date_time) >= 22 | hour(akst_date_time) < 6)
-#head(night)
 
 #######################################################################
 
@@ -268,6 +262,8 @@ CalanidsUnid = l8zoop4 %>%
 #Other copepoda (Damaged, adults, all sizes) # none in these data
 
 
+
+# Euphausiisds: Janet Duffy-Anderson (EcoFOCI) advises we can use day & night samples for Euphausiids because the whole water column is sampled beginning 10m from bottom
 EuphausiidAdJuv = l8zoop4 %>%
   filter(taxonName %in% c("Tessarabrachion oculatum", "Thysanoessa raschii", "Thysanoessa inermis", "Thysanoessa spinifera",
                           "Thysanoessa longipes", "Thysanoessa inspinata", "Euphasia pacifica", "Euphausiid")) %>%
