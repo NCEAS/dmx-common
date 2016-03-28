@@ -6,8 +6,8 @@
 
 
 ## load packages
-library(dplyr)
-library(lubridate)
+#library(dplyr)
+#library(lubridate)
 
 
 # call output dataframe from Cleaning Script
@@ -121,11 +121,12 @@ l8zoop4 <- l8zoop3 %>%
   mutate(volumetricAbund = as.numeric(volumetricAbund)) # convert to a numeric vector
 head(l8zoop4)  
 
+# Janet advises we don't need to use only night samples for Euphausiids because the whole water column is sampled
 # # create dataframe with samples collected at night (use this for Euphausiids and Mysids)
 # define night as 22:00 to 05:59 (took times from Seward Line MOCNESS / Multinet collections) ... Anchorage sunrise/sunset times on May 15 are 05:10 and 22:40
-night <- l8zoop4 %>%
-  filter(hour(akst_date_time) >= 22 | hour(akst_date_time) < 6)
-head(night)
+#night <- l8zoop4 %>%
+#  filter(hour(akst_date_time) >= 22 | hour(akst_date_time) < 6)
+#head(night)
 
 #######################################################################
 
@@ -267,7 +268,7 @@ CalanidsUnid = l8zoop4 %>%
 #Other copepoda (Damaged, adults, all sizes) # none in these data
 
 
-EuphausiidAdJuv = night %>%
+EuphausiidAdJuv = l8zoop4 %>%
   filter(taxonName %in% c("Tessarabrachion oculatum", "Thysanoessa raschii", "Thysanoessa inermis", "Thysanoessa spinifera",
                           "Thysanoessa longipes", "Thysanoessa inspinata", "Euphasia pacifica", "Euphausiid")) %>%
   filter(stage %in% c("a + j (adult/juvenile)")) %>%
@@ -279,7 +280,7 @@ EuphausiidAdJuv = night %>%
   ungroup
 
 
-EuphausiidFurcillia = night %>%
+EuphausiidFurcillia = l8zoop4 %>%
   filter(taxonName == "Euphausiid") %>%
   filter(stage %in% c("furcilia")) %>%
   group_by(year, station) %>%
@@ -371,7 +372,7 @@ Hyperiidea = l8zoop4 %>%
   ungroup
 
 
-Mysidacea = night %>%
+Mysidacea = l8zoop4 %>%
   filter(taxonName == "Mysidacea") %>%
   filter(size %in% c(">= 5 mm")) %>%
   group_by(year, station) %>%
@@ -421,30 +422,15 @@ SpringZoopAbund <- merge(SpringZoopAbund,Ctenophora,all.x=T)
 SpringZoopAbund <- merge(SpringZoopAbund,Gammaridea,all.x=T)
 SpringZoopAbund <- merge(SpringZoopAbund,Hyperiidea,all.x=T)
 SpringZoopAbund <- merge(SpringZoopAbund,Siphonophora,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,EuphausiidAdJuv,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,EuphausiidFurcillia,all.x=T)
+SpringZoopAbund <- merge(SpringZoopAbund,Mysidacea,all.x=T)
 # now change all NA to zero
 SpringZoopAbund[is.na(SpringZoopAbund)] <- 0
-#View(SpringZoopAbund)
+View(SpringZoopAbund)
 
+write.csv(SpringZoopAbund, file = "Line8SpringZoop.csv", row.names = F) # create .csv file of output
 
-
-# do the same for years in which samples were collected at night:
-unique(sort(night$year))  # nighttime samples were collected in these years: 1989 1990 1996 1998 2000 2001 2005 2006 2007 2008 2010 2012
-NightSpringZoopAbund <- data.frame('year'=c(1989, 1990, 1996, 1998, 2000, 2001, 2005:2008, 2010)) 
-
-NightSpringZoopAbund <- merge(NightSpringZoopAbund,EuphausiidAdJuv,all.x=T)
-NightSpringZoopAbund <- merge(NightSpringZoopAbund,EuphausiidFurcillia,all.x=T)
-NightSpringZoopAbund <- merge(NightSpringZoopAbund,Mysidacea,all.x=T)
-#View(NightSpringZoopAbund)
-# there are no NAs in the dataset, but we would fill them in here if needed
-
-
-
-#Now merge Nighttime samples into Spring dataset:
-SpringZoopAbund <- merge(SpringZoopAbund,NightSpringZoopAbund,all.x=T)
-#View(SpringZoopAbund)
-
-
-#write.csv(SpringZoopAbund, file = "Line8SpringZoop.csv", row.names = F) # create .csv file of output
 
 ######################################################################
 
